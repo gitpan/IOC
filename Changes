@@ -1,6 +1,12 @@
 Revision history for Perl extension IOC.
 
-0.09 Mon Nov 5 2004
+0.10 Tues Nov 9 2004
+    * IOC::Proxy
+        ~ fixed a warning about subroutine redefinition
+          when we add the auto-stringification 
+          functionality to an object
+
+0.09 Mon Nov 8 2004
     + added IOC::Proxy
         - added tests and documentation for this 
     

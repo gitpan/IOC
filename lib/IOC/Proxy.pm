@@ -4,7 +4,7 @@ package IOC::Proxy;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 
@@ -47,6 +47,7 @@ sub wrap {
 
     no strict 'refs';
     while (my ($method_name, $method) = each %{$methods}) {
+        next if defined &{"${proxy_package}::$method_name"};
         if ($method_name eq 'AUTOLOAD') {
             *{"${proxy_package}::$method_name"} = sub { 
                             my $a = our $AUTOLOAD;
