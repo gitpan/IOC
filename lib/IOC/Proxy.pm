@@ -4,31 +4,35 @@ package IOC::Proxy;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use IOC::Exceptions;
 
 sub new {
     my ($_class, $config) = @_;
     my $class = ref($_class) || $_class;
-    my $proxy_server = {
-        config => $config
-        };
+    my $proxy_server = {};
     bless($proxy_server, $class);
+    $proxy_server->_init($config);
     return $proxy_server;
+}
+
+sub _init {
+    my ($self, $config) = @_;
+    $self->{config} = $config;
 }
 
 sub wrap {
     my ($self, $obj) = @_;
     (defined($obj) && ref($obj) && UNIVERSAL::isa($obj, 'UNIVERSAL')) 
         || throw IOC::InsufficientArguments "You can only wrap other objects";
-    my $obj_class = ref($obj);
+    my $obj_class = $self->_getObjectClass($obj);
 
     my $methods = {};
     $self->_collectAllMethods($obj_class, $methods);
     (keys %{$methods}) || throw IOC::OperationFailed "No methods could be found in '$obj_class'";
 
-    my $proxy_package = "${obj_class}::_::Proxy";
+    my $proxy_package = $self->_createProxyPackageName($obj_class);
 
     eval $self->_createPackageString($obj_class, $proxy_package);
     throw IOC::OperationFailed "Could not create proxy package '$proxy_package' for object '$obj'" => $@ if $@;
@@ -133,6 +137,16 @@ sub _installMethods {
     }
 }
 
+sub _createProxyPackageName {
+    my ($self, $obj_class) = @_;
+    return "${obj_class}::_::Proxy"
+}
+
+sub _getObjectClass {
+    my ($self, $obj) = @_;
+    return ref($obj);
+}
+
 1;
 
 __END__
@@ -148,21 +162,20 @@ IOC::Proxy - Proxy for the IOC Framework
   my $proxy_server = IOC::Proxy->new({
                         on_method_call => sub {
                         my ($proxy_server, $method_name, $method_full_name, $current_method_args) = @_;
-                        print ("Method '$method_name' called with args (" . 
+                        warn ("Method '$method_name' called with args (" . 
                               (join ", " => @{$current_method_args}) .
                               "), now passing call to '$method_full_name'");
                         }
                     });
   
-  my $proxied_object = $proxy_server->wrap($object);
+  $proxy_server->wrap($object);
   # this now wraps the $object in a special proxy package
   # which will intercept all it's calls, while still
   # behaving exactly as if it was not proxied
   
-  $proxied_object->method();
-  # this will print:
+  $object->method();
+  # this will warn:
   #    Method 'method' called with args (Class::_::Proxy=HASH(0x859978)), now passing call to 'Class::method'
-  
 
 =head1 DESCRIPTION
 

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 19;
 use Test::Exception;
 
 BEGIN { 
@@ -26,6 +26,7 @@ BEGIN {
             use_ok('IOC::Service::Prototype::SetterInjection');     
     
     use_ok('IOC::Proxy');
+        use_ok('IOC::Proxy::Interfaces');	    
     
     # IOC::Visitor     
         use_ok('IOC::Visitor::ServiceLocator');

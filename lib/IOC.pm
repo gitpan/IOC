@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 use IOC::Exceptions;
 
@@ -133,6 +133,10 @@ This is a singleton registry which can be used to store and search IOC::Containe
 =item L<IOC::Proxy>
 
 This package can be used alone or as a base class and be used to proxy service instances. 
+
+=item L<IOC::Proxy::Interfaces>
+
+This IOC::Proxy subclass which proxies an object, but only implements a specified interface.
 
 =back
 
@@ -314,7 +318,8 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a    6.0  100.0
  IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    5.5  100.0
  IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.9   98.3
- IOC/Proxy.pm                                   100.0   91.7   81.8  100.0  100.0   61.0   97.2
+ IOC/Proxy.pm                                   100.0   91.7   81.8  100.0  100.0   14.7   97.4
+ IOC/Proxy/Interfaces.pm                        100.0  100.0    n/a  100.0    n/a    1.0  100.0
  IOC/Container.pm                               100.0   98.1   94.3  100.0  100.0   21.0   99.0
  IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.4  100.0
  IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   20.7   97.6
@@ -327,7 +332,7 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Visitor/SearchForService.pm                100.0  100.0   77.8  100.0  100.0    2.0   96.7
  IOC/Visitor/ServiceLocator.pm                  100.0  100.0   77.8  100.0  100.0    3.2   96.9
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                          100.0   97.9   83.9  100.0  100.0  100.0   98.1
+ Total                                          100.0   98.0   83.9  100.0  100.0  100.0   98.2
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO

@@ -1,5 +1,13 @@
 Revision history for Perl extension IOC.
 
+0.12 
+    + Added IOC::Proxy::Interfaces
+        ~ added tests and docs for this
+        
+    * IOC::Proxy
+        - broke out some more methods, so that subclasses
+          can really affect things on a granular level
+
 0.11 Thurs Nov 11 2004   
     * IOC
         - added the IOC::Proxy module to the module 

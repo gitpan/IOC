@@ -10,6 +10,7 @@ lib/IOC/Proxy.pm
 lib/IOC/Registry.pm
 lib/IOC/Service.pm
 lib/IOC/Container/MethodResolution.pm
+lib/IOC/Proxy/Interfaces.pm
 lib/IOC/Service/ConstructorInjection.pm
 lib/IOC/Service/Prototype.pm
 lib/IOC/Service/SetterInjection.pm
@@ -34,5 +35,6 @@ t/35_IOC_Service_Prototype_SetterInjection_test.t
 t/40_IOC_Registry_test.t
 t/50_IOC_Proxy_test.t
 t/51_IOC_Proxy_edge_case_test.t
+t/55_IOC_Proxy_Interfaces_test.t
 t/pod.t
 t/pod_coverage.t
