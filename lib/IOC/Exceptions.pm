@@ -4,13 +4,13 @@ package IOC::Exceptions;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Class::Throwable qw(
         IOC::ServiceNotFound
-        IOC::DuplicateServiceException
-        IOC::MissingContainerException
-        IOC::DuplicateContainerException
+        IOC::ServiceAlreadyExists
+        IOC::ContainerNotFound
+        IOC::ContainerAlreadyExists
         IOC::IllegalOperation
         IOC::InsufficientArguments
         IOC::InitializationError
@@ -41,11 +41,11 @@ IOC::Exceptions - Exception objects for the IOC Framework
 
 =item B<IOC::ServiceNotFound>
 
-=item B<IOC::DuplicateServiceException>
+=item B<IOC::ServiceAlreadyExists>
 
-=item B<IOC::MissingContainerException>
+=item B<IOC::ContainerNotFound>
 
-=item B<IOC::DuplicateContainerException>
+=item B<IOC::ContainerAlreadyExists>
 
 =item B<IOC::InsufficientArguments>
 
@@ -62,6 +62,12 @@ IOC::Exceptions - Exception objects for the IOC Framework
 =back
 
 =head1 TO DO
+
+=over 4
+
+=item Work on the documentation
+
+=back
 
 =head1 BUGS
 

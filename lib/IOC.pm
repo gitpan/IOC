@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IOC::Exceptions;
 
@@ -20,7 +20,7 @@ use IOC::Service;
 #         || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
 #     my $container_name = $container->name();
 #     (!exists $CONTAINERS{$name})
-#         || throw IOC::DuplicateContainerException "Duplicate Container '$name'";
+#         || throw IOC::ContainerAlreadyExists "Duplicate Container '$name'";
 #     $CONTAINER{$name} = $container;
 # }
 # 
@@ -58,23 +58,38 @@ IOC - A lightweight IOC (Inversion of Control) framework
 
 =head1 DESCRIPTION
 
-I<B<NOTE:> This is B<very> alpha software, and a very early release of this module. There are many plans in the works, and should be coming soon as this project is currently under active development. That said, submission, suggestions and general critisism is welcomed and encouraged.>
-
 This module provide a lightweight IOC or Inversion of Control framework. Inversion of Control, sometimes called Dependency Injection, is a component management style which aims to clean up component configuration and provide a cleaner, more flexible means of configuring a large application.
 
 A similar style of component management is the Service Locator, in which a global Service Locator object holds instances of components which can be retrieved by key. The common style is to create and configure each component instance and add it into the Service Locator. The main drawback to this approach is the aligning of the dependencies of each component prior to inserting the component into the Service Locator. If your dependency requirements change, then your initialization code must change to accomidate. This can get quite complex when you need to re-arrange initialization ordering and such. The Inversion of Control style alleviates this problem by taking a different approach.
 
 With Inversion of Control, you configure a set of individual Service objects, which know how to initialize their particular components. If these components have dependencies, the will resolve them through the IOC framework itself. This results in a loosly coupled configuration which places no expectation upon initialization order. If your dependency requirements change, you need only adjust your Service's initialization routine, the ordering will adapt on it's own.
 
-Now, if you are confused by my description above, then I suggest going to this page (L<http://onestepback.org/index.cgi/Tech/Ruby/DependencyInjectionInRuby.rdoc>) and reading the description there. This author does a much better job than I could ever hope to in explaining Inversion of Control (or as he calls it Dependency Injection). It should also be noted that the code and IoC techniques in this module were taken largely from this article. For more links and information on this topic, see the L<SEE ALSO> section.
+For links to how other people have explained Inversion of Control, see the L<SEE ALSO> section.
 
-=head1 TO DO
+=head2 Diagrams
+
+Here is a quick class relationship diagram, to help illustrate how the peices of this system fit together.
+
+ +------------------+                  +--------------+                 +-------------------------+
+ |  IOC::Container  |---(*services)--->| IOC::Service |---(instance)--->| <Your Component/Object> |
+ +------------------+                  +--------------+                 +-------------------------+
+           |
+   (*sub-containers)
+           | 
+           V    
+ +------------------+
+ |  IOC::Container  |
+ +------------------+   
+       
+=head1 TO DO   
 
 =over 4
 
-=item Create a tree-like Container manager
+=item Work on the documentation
 
-I can use a path syntax to climb the tree (ex: 'database/connection', 'logging/logger', 'logging/log_file', etc). This would allow a finer grainer organization of services and containers, however it would also only really be useful for larger projects.
+=item Create a top-level IOC::Registry
+
+This would be a singleton object, which could be used to serve a something like a top-level container. I need to think this one out more.
 
 =back
 
@@ -89,15 +104,17 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
  File                                  stmt branch   cond    sub    pod   time  total
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
- IOC.pm                               100.0    n/a    n/a  100.0    n/a    9.6  100.0
- IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a   11.5  100.0
- IOC/Container.pm                     100.0   90.0   81.8  100.0  100.0   15.7   96.0
- IOC/Container/MethodResolution.pm    100.0  100.0    n/a  100.0    n/a    3.7  100.0
- IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   39.2   97.5
- IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    9.7   97.3
- IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0   10.5   97.2
+ IOC.pm                               100.0    n/a    n/a  100.0    n/a   38.2  100.0
+ IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a    5.9  100.0
+ IOC/Interfaces.pm                    100.0    n/a    n/a  100.0    n/a    5.6  100.0
+ IOC/Container.pm                     100.0   96.7   93.1  100.0  100.0   25.7   98.4
+ IOC/Container/MethodResolution.pm    100.0  100.0    n/a  100.0    n/a    1.4  100.0
+ IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   11.9   97.5
+ IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    4.1   97.3
+ IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0    4.2   97.2
+ IOC/Visitor/ServiceLocator.pm        100.0  100.0   77.8  100.0  100.0    3.2   97.0
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                100.0   98.1   80.5  100.0  100.0  100.0   97.5
+ Total                                100.0   98.8   85.3  100.0  100.0  100.0   98.0
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
@@ -106,7 +123,7 @@ Some IoC Article links
 
 =over 4
 
-=item The code here is based upon the code found in this article.
+=item The code here was originally inspired by the code found in this article.
 
 L<http://onestepback.org/index.cgi/Tech/Ruby/DependencyInjectionInRuby.rdoc>
 
@@ -117,6 +134,10 @@ L<http://today.java.net/pub/a//today/2004/02/10/ioc.html>
 =item An article by Martin Fowler about IoC
 
 L<http://martinfowler.com/articles/injection.html>
+
+=item This is also sometimes called the Hollywood Principle
+
+L<http://c2.com/cgi/wiki?HollywoodPrinciple>
 
 =back
 

@@ -128,13 +128,15 @@ This method returns the component held by the service object, the is basically t
 
 =over 4
 
+=item Work on the documentation
+
+=item Allow for prototyped services as well as the current singleton style
+
+I am still thinking about the best way to handle this.
+
 =item Create a InterfaceInjection service 
 
 This is the most complex of all the injection methods, and will require the most code. I have to read up on this technique a little more first.
-
-=item Allow a containerless IOC::Service 
-
-Basically it would be IOC::Service::Containerless, and would not require a container. This may or may not be useful, we shall see.
 
 =back
 

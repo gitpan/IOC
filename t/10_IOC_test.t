@@ -8,19 +8,41 @@ use Test::Exception;
 
 BEGIN { 
     use_ok('IOC');
+    
     use_ok('IOC::Exceptions');    
+    use_ok('IOC::Interfaces'); 
+    
     use_ok('IOC::Container');
+        use_ok('IOC::Container::MethodResolution');
+    
     use_ok('IOC::Service');    
+        use_ok('IOC::Service::ConstructorInjection'); 
+        use_ok('IOC::Service::SetterInjection');     
+    
+    # IOC::Visitor     
+        use_ok('IOC::Visitor::ServiceLocator');         
 }
 
+# test our simple example
 
 {
     package FileLogger;
-    sub new { bless { log_file => $_[1] } => $_[0] }
+    sub new { 
+        my ($class, $log_file) = @_;
+        ($log_file eq 'logfile.log') || die "Got wrong log file";
+        bless { log_file => $log_file } => $class; 
+    }
     
     package Application;
-    sub new { bless { logger => undef } => $_[0] }
-    sub logger { $_[0]->{logger} = $_[1] }
+    sub new { 
+        my $class = shift;
+        bless { logger => undef } => $class 
+    }
+    sub logger { 
+        my ($self, $logger) = @_;
+        (UNIVERSAL::isa($logger, 'FileLogger')) || die "Got wrong logger type";
+        $self->{logger} = $logger;
+    }
     sub run {}
 }	
 
@@ -41,4 +63,88 @@ lives_ok {
     
     $container->get('application')->run();
     
-} '... our framework works';
+} '... our simple example ran successfully';
+
+# and now test out our complex example
+
+{
+    package My::FileLogger;
+    sub new { 
+        my ($class, $log_file) = @_;
+        (UNIVERSAL::isa($log_file, 'OPEN')) || die "Incorrect Log File";
+        bless { log_file => $log_file } => $class; 
+    }
+
+    package My::FileManager;
+    sub new { 
+        my $class = shift;
+        bless { } => $class 
+    }
+    sub openFile {
+        my ($self, $name) = @_;
+        return bless \$name, 'OPEN';
+    }
+    
+    package My::DB;
+    sub connect {
+        my ($class, $dsn, $u, $p) = @_;
+        (defined($dsn) && defined($u) && defined($p)) || die "Database not initialized";
+        bless { dsn => $dsn, u => $u, p => $p } => $class;
+    }
+    
+    package My::Application;
+    sub new { 
+        my ($class) = @_;
+        bless { 
+            logger   => undef,
+            database => undef
+        } => $class 
+    }
+    sub logger { 
+        my ($self, $logger) = @_;
+        (UNIVERSAL::isa($logger, 'My::FileLogger')) || die "Got wrong logger type";
+        $self->{logger} = $logger;
+    }
+    sub db_connection { 
+        my ($self, $database) = @_;
+        (UNIVERSAL::isa($database, 'My::DB')) || die "Got wrong DB type";
+        $self->{database} = $database;
+    }    
+
+    sub run {}
+}
+
+lives_ok {
+
+    my $logging = IOC::Container->new('logging');
+    $logging->register(IOC::Service->new('logger' => sub {
+        my $c = shift;
+        return My::FileLogger->new($c->find('/filesystem/filemanager')->openFile($c->get('log_file')));
+    }));
+    $logging->register(IOC::Service->new('log_file' => sub { '/var/my_app.log' }));
+    
+    my $database = IOC::Container->new('database');
+    $database->register(IOC::Service->new('connection' => sub {
+        my $c = shift;
+        return My::DB->connect($c->get('dsn'), $c->get('username'), $c->get('password'));
+    }));
+    $database->register(IOC::Service->new('dsn' => sub { 'dbi:mysql:my_app' }));
+    $database->register(IOC::Service->new('username' => sub { 'test' }));
+    $database->register(IOC::Service->new('password' => sub { 'secret_test' }));          
+    
+    my $file_system = IOC::Container->new('filesystem');
+    $file_system->register(IOC::Service->new('filemanager' => sub { return My::FileManager->new() }));
+            
+    my $container = IOC::Container->new(); 
+    $container->addSubContainers($file_system, $database, $logging);
+    $container->register(IOC::Service->new('application' => sub {
+        my $c = shift; 
+        my $app = My::Application->new();
+        $app->logger($c->find('/logging/logger'));
+        $app->db_connection($c->find('/database/connection'));
+        return $app;
+    })); 
+    
+    $container->get('application')->run();
+  
+} '... our complex example ran successfully';

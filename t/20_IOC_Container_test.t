@@ -51,7 +51,7 @@ lives_ok {
 
 throws_ok {
     $container->register($service);    
-} "IOC::DuplicateServiceException", '... cannot register duplicate named service';
+} "IOC::ServiceAlreadyExists", '... cannot register duplicate named service';
 
 # check get errors
 

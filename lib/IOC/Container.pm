@@ -4,9 +4,12 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
+use IOC::Interfaces;
 use IOC::Exceptions;
+
+use base 'IOC::Visitable';
 
 sub new {
     my ($_class, $name) = @_;
@@ -20,6 +23,8 @@ sub new {
 sub _init {
     my ($self, $name) = @_;
     $self->{services} = {};
+    $self->{sub_containers} = {};
+    $self->{parent_container} = undef;
     $self->{name} = $name || 'default';
 }
 
@@ -28,23 +33,103 @@ sub name {
     return $self->{name};
 }
 
+# parent containers 
+
+sub setParentContainer {
+    my ($self, $parent_container) = @_;
+    (defined($parent_container) && ref($parent_container) && UNIVERSAL::isa($parent_container, 'IOC::Container'))
+        || throw IOC::InsufficientArguments "You must provide an IOC::Container object as a parent container";    
+    $self->{parent_container} = $parent_container;
+}
+
+sub getParentContainer {
+    my ($self) = @_;
+    return $self->{parent_container};
+}
+
+sub isRootContainer {
+    my ($self) = @_;
+    return defined($self->{parent_container}) ? 0 : 1;
+}
+
+# sub containers
+
+sub addSubContainer {
+    my ($self, $container) = @_;
+    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+        || throw IOC::InsufficientArguments "You must provide an IOC::Container object as a sub-container";
+    my $name = $container->name();
+    (!exists ${$self->{sub_containers}}{$name}) 
+        || throw IOC::ContainerAlreadyExists "Duplicate Sub-Container Name '${name}'";     
+    $self->{sub_containers}->{$name} = $container;
+    $container->setParentContainer($self);
+    $self;
+}
+
+sub addSubContainers {
+    my ($self, @containers) = @_;
+    (@containers) || throw IOC::InsufficientArguments "You must provide at least one IOC::Container to add";
+    $self->addSubContainer($_) foreach @containers;
+    $self;
+}
+
+sub hasSubContainers {
+    my ($self) = @_;
+    return scalar(keys(%{$self->{sub_containers}})) ? 1 : 0;
+}
+
+sub getSubContainerList {
+    my ($self) = @_;
+    return keys %{$self->{sub_containers}};
+}
+
+sub getSubContainer {
+    my ($self, $name) = @_;
+    (defined($name)) || throw IOC::InsufficientArguments "You must supply a name of a sub-container";
+    (exists ${$self->{sub_containers}}{$name}) 
+        || throw IOC::ContainerNotFound "There is no subcontainer by the name '${name}'";     
+    return $self->{sub_containers}->{$name};
+}
+
+sub getAllSubContainers {
+    my ($self) = @_;
+    return values %{$self->{sub_containers}};
+}
+
+sub accept {
+    my ($self, $visitor) = @_;
+    (defined($visitor) && ref($visitor) && UNIVERSAL::isa($visitor, 'IOC::Visitor'))
+        || throw IOC::InsufficientArguments "You must pass an IOC::Visitor object to the visit method";
+    return $visitor->visit($self);
+}
+
+# services
+
 sub register {
     my ($self, $service) = @_;
     (defined($service) && ref($service) && UNIVERSAL::isa($service, 'IOC::Service'))
         || throw IOC::InsufficientArguments "You must provide a valid IOC::Service object to register";
     my $name = $service->name();
     (!exists ${$self->{services}}{$name}) 
-        || throw IOC::DuplicateServiceException "Duplicate Service Name '${name}'"; 
+        || throw IOC::ServiceAlreadyExists "Duplicate Service Name '${name}'"; 
     $service->setContainer($self);
     $self->{services}->{$name} = $service;
+    $self;
 }
 
 sub get {
     my ($self, $name) = @_;
-    (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";    
+    (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
     (exists ${$self->{services}}{$name}) 
         || throw IOC::ServiceNotFound "Unknown Service '${name}'";
     $self->{services}->{$name}->instance();
+}
+
+sub find {
+    my ($self, $path) = @_;
+    (defined($path)) || throw IOC::InsufficientArguments "You must provide a path of find a service";
+    require IOC::Visitor::ServiceLocator;
+    return $self->accept(IOC::Visitor::ServiceLocator->new($path));    
 }
 
 sub getServiceList {
@@ -54,6 +139,13 @@ sub getServiceList {
 
 sub DESTROY {
     my ($self) = @_;
+    # this will not DESTROY all the
+    # sub-containers it holds, since
+    # a sub-container might be still
+    # refered to elsewhere.
+    $self->{sub_containers} = undef;
+    # and the same with the parent
+    $self->{parent_container} = undef;
     # this will DESTROY all the
     # services it holds, since
     # a service can only have one
@@ -90,11 +182,47 @@ IOC::Container - An IOC Container object
       return $app;
   }));
 
-  $container->get('application')->run();       
+  $container->get('application')->run();    
+  
+  
+  # or a more complex example
+  # utilizing a tree-like structure
+  # of services
+
+  my $logging = IOC::Container->new('logging');
+  $logging->register(IOC::Service->new('logger' => sub {
+      my $c = shift;
+      return My::FileLogger->new($c->find('/filesystem/filemanager')->openFile($c->get('log_file')));
+  }));
+  $logging->register(IOC::Service->new('log_file' => sub { '/var/my_app.log' })); 
+  
+  my $database = IOC::Container->new('database');
+  $database->register(IOC::Service->new('connection' => sub {
+      my $c = shift;
+      return My::DB->connect($c->get('dsn'), $c->get('username'), $c->get('password'));
+  }));
+  $database->register(IOC::Service->new('dsn' => sub { 'dbi:mysql:my_app' }));
+  $database->register(IOC::Service->new('username' => sub { 'test' }));
+  $database->register(IOC::Service->new('password' => sub { 'secret_test' }));          
+  
+  my $file_system = IOC::Container->new('filesystem');
+  $file_system->register(IOC::Service->new('filemanager' => sub { return My::FileManager->new() })); 
+          
+  my $container = IOC::Container->new(); 
+  $container->addSubContainers($file_system, $database, $logging);
+  $container->register(IOC::Service->new('application' => sub {
+      my $c = shift; 
+      my $app = My::Application->new();
+      $app->logger($c->find('/logging/logger'));
+      $app->db_connection($c->find('/database/connection'));
+      return $app;
+  })); 
+  
+  $container->get('application')->run();    
 
 =head1 DESCRIPTION
 
-In this IOC framework, the IOC::Container object holds instance of IOC::Service objects keyed by strings.
+In this IOC framework, the IOC::Container object holds instances of IOC::Service objects keyed by strings. It can also have sub-containers, which are instances of IOC::Container objects also keyed by string.
 
 =head1 METHODS
 
@@ -108,13 +236,19 @@ A container can be named with the optional C<$container_name> argument, otherwis
 
 This will return the name of the container.
 
+=back
+
+=head2 Service Methods
+
+=over 4
+
 =item B<register ($service)>
 
 Given a C<$service>, this will register the C<$service> as part of this container. The value returned by the C<name> method of the C<$service> object is as the key where this service is stored. This also will call C<setContainer> on the C<$service> and pass in it's own instance.
 
 If C<$service> is not an instance of IOC::Service, or a subclass of it, an B<IOC::InsufficientArguments> exception will be thrown.
 
-If the name of C<$service> already exists, then a B<IOC::DuplicateServiceException> exception is thrown.
+If the name of C<$service> already exists, then a B<IOC::ServiceAlreadyExists> exception is thrown.
 
 =item B<get ($name)>
 
@@ -122,13 +256,75 @@ Given a C<$name> this will return the service instance that name corresponds to,
 
 If there is no service by that C<$name>, then a B<IOC::ServiceNotFound> exception is thrown.
 
+=item B<find ($path)>
+
+Given a C<$path> to a service, this method will attempt to locate that service. It utilizes the L<IOC::Visitor::ServiceLocator> to do this. 
+
 =item B<getServiceList>
 
 Returns a list of all the named services available.
 
 =back
 
+=head2 Parent Container Methods
+
+=over 4
+
+=item B<getParentContainer>
+
+Get the parent container associated with this instance. If there is no container, undef is returned.
+
+=item B<setParentContainer ($container)>
+
+Given a C<$container>, this will associate it as the invocant's parent. If the C<$container> is not an instance of IOC::Container (or a subclass of it), an B<IOC::InsufficientArguments> exception will be thrown.
+
+=item B<isRootContainer>
+
+If the invocant does not have a parent, then it is considered a root container and this method will return true (C<1>), otherwise it will return false (C<0>).
+
+=back
+
+=head2 Sub-Container Methods
+
+=over 4
+
+=item B<addSubContainer ($container)>
+
+Adds a C<$container> to it's keyed list of sub-containers. This has the effect of making the invocant the parent of C<$container>. If C<$container> is not a IOC::Container object (or a subclass of it), then an B<IOC::InsufficientArguments> exception is thrown. If the name of C<$container> is a duplicate of one already stored, then a B<IOC::ContainerAlreadyExists> exception is thrown.
+
+=item B<addSubContainers (@container)>
+
+This just loops calling C<addSubContainer> on each of the items in C<@containers>.
+
+=item B<hasSubContainers>
+
+This will return true (C<1>) if the invocant has sub-containers, and false (C<0>) otherwise.
+
+=item B<getSubContainerList>
+
+This will return a list of strings which the sub-containers are keyed by.
+
+=item B<getSubContainer ($name)>
+
+This will return the sub-container associated with C<$name>. If C<$name> is undefined an B<IOC::InsufficientArguments> exception will be thrown. If no sub-container exists by that C<$name>, then an B<IOC::ContainerNotFound> exception will be thrown.
+
+=item B<getAllSubContainers>
+
+This will return a list of the actual sub-containers stored. This will be in the same order as the list returned by C<getSubContainerList>.
+
+=item B<accept ($visitor)>
+
+This method is part of the I<IOC::Visitable> interface. It accepts only C<$visitor> objects which implement the I<IOC::Visitor> interface. 
+
+=back
+
 =head1 TO DO
+
+=over 4
+
+=item Work on the documentation
+
+=back
 
 =head1 BUGS
 
