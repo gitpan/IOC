@@ -1,8 +1,15 @@
 Revision history for Perl extension IOC.
 
-0.12 
+0.13 Wed Nov 17 2004
+    * IOC::Service::Prototype
+        - removed any reference to the prototypical
+          instance, so that complete lifecycle control
+          is given to the consumer of the service
+            ~ added tests and documentation for this
+
+0.12 Tues Nov 16 2004
     + Added IOC::Proxy::Interfaces
-        ~ added tests and docs for this
+        - added tests and documentation for this 
         
     * IOC::Proxy
         - broke out some more methods, so that subclasses

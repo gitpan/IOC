@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Test::Exception;
 
 BEGIN {    
@@ -16,6 +16,11 @@ BEGIN {
     sub new {
         my $class = shift;
         return bless {} => $class;
+    }
+    
+    our $DESTROYED_Loggers = 0;
+    sub DESTROY {
+       $DESTROYED_Loggers++;
     }
 }
 
@@ -55,10 +60,18 @@ lives_ok {
     $service->setContainer($container);
 } '... set container successfully';
 
-my $logger = $service->instance('logger');
-isa_ok($logger, 'Logger');
+{
+    my $logger = $service->instance('logger');
+    isa_ok($logger, 'Logger');
+    
+    {
+        my $logger2 = $service->instance('logger');
+        isa_ok($logger2, 'Logger');
+        
+        isnt($logger, $logger2, '... each logger instance is the same');
+    }
+    
+    cmp_ok($Logger::DESTROYED_Loggers, '==', 1, '... one logger has been destoryed');
+}
 
-my $logger2 = $service->instance('logger');
-isa_ok($logger2, 'Logger');
-
-isnt($logger, $logger2, '... each logger instance is the same');
+cmp_ok($Logger::DESTROYED_Loggers, '==', 2, '... two loggers were destoryed');

@@ -4,7 +4,7 @@ package IOC::Service::Prototype;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 
@@ -14,9 +14,9 @@ sub instance {
     my ($self) = @_;
     (defined($self->{container}))
         || throw IOC::IllegalOperation "Cannot create a service instance without setting container";    
-    # we need to be sure to store this so that monitoring can still work
-    $self->{_instance} = $self->{block}->($self->{container});
-    return $self->{_instance};
+    # we need to be sure to not store this value
+    # otherwise we will add a ref count to it 
+    return $self->{block}->($self->{container});
 }
 
 1;
@@ -44,6 +44,10 @@ This class essentially can be used just like IOC::Service, the only difference i
    +-------------------------+
    | IOC::Service::Prototype |
    +-------------------------+
+   
+=head2 A Note about Lifecycles   
+   
+One important distinction to make about this lifecycle as opposed to the singleton lifecycle is that we do not make any references to the component within the service, so you have total control over the scope of your component. This means that once the prototypical component you retrieved from a IOC::Service::Prototype container goes out of scope, it's C<DESTROY> method will be called (assuming all it's own references have been cleaned up). 
    
 =head1 METHODS
 
