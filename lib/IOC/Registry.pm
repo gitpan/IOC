@@ -4,7 +4,7 @@ package IOC::Registry;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Scalar::Util qw(blessed);
 
@@ -20,7 +20,8 @@ sub new {
     my ($_class) = @_;
     my $class = ref($_class) || $_class;
     my $registry = {
-        containers => {}
+        containers => {},
+        service_aliases => {}
         };
     bless($registry, $class);
     $registry->_init();
@@ -79,11 +80,23 @@ sub hasRegisteredContainer {
     return (exists ${$self->{containers}}{$name}) ? 1 : 0;
 }
 
+# aliasing
+
+sub aliasService {
+    my ($self, $real_path, $alias_path) = @_;
+    (defined($alias_path) && defined($real_path)) 
+        || throw IOC::InsufficientArguments "You must supply a alias path and a real path";
+    $self->{service_aliases}->{$alias_path} = $real_path;
+}
+
 # locate Service by path
 
 sub locateService {
     my ($self, $path) = @_;
     (defined($path)) || throw IOC::InsufficientArguments "You must supply a path to a service";
+    # if the service has been aliased, get the real path ...
+    $path = $self->{service_aliases}->{$path} if exists ${$self->{service_aliases}}{$path};
+    # and go about your normal business ...
     my @path = grep { $_ } split /\// => $path;
     my $registered_container_name = shift @path;
     (exists ${$self->{containers}}{$registered_container_name}) 
@@ -217,6 +230,21 @@ This will retrieve a registered container by C<$name> from the registry. If C<$n
 =item B<getRegisteredContainerList>
 
 This will return the list of string names of all the registered containers.
+
+=back
+
+=head2 Aliasing Methods
+
+=over 4
+
+=item B<aliasService ($real_path, $alias_path)>
+
+This allows you to alias a path to a real service (C<$real_path>) to be accessible from a different path (C<$alias_path>). Basically, it is sometimes useful for the same service to be found at two different paths, especially when re-useing and combining IOC configurations for different frameworks.
+
+The aliases set by this method will only affect the services retrieved through the C<locateService> method. The aliases do not have any meaning outside of the IOC::Registry. 
+
+B<NOTE:>
+There is no easy way to validate that the C<$real_path> is actually a valid path, so we make the assumption that you know what you are doing. 
 
 =back
 

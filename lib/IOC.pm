@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.22';
+our $VERSION = '0.23';
 
 use IOC::Exceptions;
 
@@ -297,7 +297,7 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC.pm                                         100.0    n/a    n/a  100.0    n/a    2.3  100.0
  IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a   22.2  100.0
  IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    6.9  100.0
- IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.8   98.3
+ IOC/Registry.pm                                100.0   97.6   66.7  100.0  100.0    7.1   97.4
  IOC/Proxy.pm                                   100.0   92.3   60.0  100.0  100.0    5.9   97.4
  IOC/Proxy/Interfaces.pm                        100.0  100.0    n/a  100.0    n/a    0.9  100.0
  IOC/Container.pm                               100.0   98.3   91.3  100.0  100.0   25.4   98.9
@@ -313,7 +313,7 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Visitor/SearchForService.pm                100.0  100.0   66.7  100.0  100.0    0.9   96.8
  IOC/Visitor/ServiceLocator.pm                  100.0  100.0   66.7  100.0  100.0    2.5   97.3
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                           98.9   95.6   74.5   98.5  100.0  100.0   96.7
+ Total                                           98.9   95.7   73.2   98.5  100.0  100.0   96.6
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO

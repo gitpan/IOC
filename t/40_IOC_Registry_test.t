@@ -31,10 +31,6 @@ my $test_sub_2_2;
 
 lives_ok {
 
-    $test_sub_2_2 = IOC::Container->new('sub test 2.2')
-                        ->register(IOC::Service->new('test service 2.2-1' => sub { '2.2-1' }))
-                        ->register(IOC::Service->new('test service 2.2-2' => sub { '2.2-2' }));
-
     $test1->addSubContainers(
         IOC::Container->new('sub test 1.1')
             ->register(IOC::Service->new('test service 1.1-1' => sub { '1.1-1' }))
@@ -50,6 +46,11 @@ lives_ok {
                     ->register(IOC::Service->new('test service 1.2.2-2' => sub { '1.2.2-2' }))
                 )
         );
+        
+    # this is embedded in $test2
+    $test_sub_2_2 = IOC::Container->new('sub test 2.2')
+                        ->register(IOC::Service->new('test service 2.2-1' => sub { '2.2-1' }))
+                        ->register(IOC::Service->new('test service 2.2-2' => sub { '2.2-2' }));        
     
     $test2->addSubContainers(
         IOC::Container->new('sub test 2.1')

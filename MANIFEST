@@ -35,6 +35,7 @@ t/34_IOC_Service_Prototype_ConstructorInjection_test.t
 t/35_IOC_Service_Prototype_SetterInjection_test.t
 t/36_IOC_Service_Literal_test.t
 t/40_IOC_Registry_test.t
+t/41_IOC_Registry_aliasing_test.t
 t/50_IOC_Proxy_test.t
 t/51_IOC_Proxy_edge_case_test.t
 t/55_IOC_Proxy_Interfaces_test.t
