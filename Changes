@@ -1,5 +1,17 @@
 Revision history for Perl extension IOC.
 
+0.18 Fri Dec 17 2004
+    * IOC::Container
+        - improved some diagnostic messages
+        
+    * IOC::Visitor::ServiceLocator
+        - improved some diagnostic messages
+            - added tests for these
+
+    * IOC::Exceptions
+        ~ added IOC::UnableToLocateService to help improve
+          the diagnostics in IOC::Visitor::ServiceLocator
+
 0.17 Wed Dec 15 2004
     * IOC::Container
         - added code to make sure that proxied instances

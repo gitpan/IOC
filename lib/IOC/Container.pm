@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 use Scalar::Util qw(blessed);
 
@@ -74,7 +74,7 @@ sub addSubContainer {
         || throw IOC::InsufficientArguments "You must provide an IOC::Container object as a sub-container";
     my $name = $container->name();
     (!exists ${$self->{sub_containers}}{$name}) 
-        || throw IOC::ContainerAlreadyExists "Duplicate Sub-Container Name '${name}'";     
+        || throw IOC::ContainerAlreadyExists "Duplicate Sub-Container Name '${name}' in container '" . $self->{name} . "'";     
     $self->{sub_containers}->{$name} = $container;
     $container->setParentContainer($self);
     $self;
@@ -107,7 +107,7 @@ sub getSubContainer {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must supply a name of a sub-container";
     (exists ${$self->{sub_containers}}{$name}) 
-        || throw IOC::ContainerNotFound "There is no subcontainer by the name '${name}'";     
+        || throw IOC::ContainerNotFound "There is no subcontainer by the name '${name}' in container '" . $self->{name} . "'";     
     return $self->{sub_containers}->{$name};
 }
 

@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 45;
+use Test::More tests => 49;
 use Test::Exception;
 
 BEGIN { 
@@ -17,7 +17,7 @@ BEGIN {
 can_ok("IOC::Container", 'new');
 can_ok("IOC::Visitor::ServiceLocator", 'new');
 
-my $container = IOC::Container->new();
+my $container = IOC::Container->new('root');
 isa_ok($container, 'IOC::Container');
 
 can_ok($container, 'accept');
@@ -46,7 +46,7 @@ $container->addSubContainer($test);
 $test->addSubContainer(
     IOC::Container->new('test_find')
                   ->register(
-                    IOC::Service->new('test_find_service' => sub { (shift)->find('../test_service') } )
+                    IOC::Service->new('test_find_service' => sub { "Test Find Service : " . (shift)->find('../test_service') } )
                     )
     );
 
@@ -60,11 +60,11 @@ $test->addSubContainer(
     } '... it worked';
     
     ok(defined($service), '... we got a service');
-    is($service, 'Test Service', '... got our expected service');
+    is($service, 'Test Find Service : Test Service', '... got our expected service');
 }
 
 $container->register(
-    IOC::Service->new('test_the_test_service' => sub { (shift)->find('test/test_service') } )
+    IOC::Service->new('test_the_test_service' => sub { "Test The Test Service : " .(shift)->find('test/test_service') } )
     );
     
 {
@@ -77,8 +77,28 @@ $container->register(
     } '... it worked';
     
     ok(defined($service), '... we got a service');
-    is($service, 'Test Service', '... got our expected service');
-}    
+    is($service, 'Test The Test Service : Test Service', '... got our expected service');
+}  
+
+# check for find errors
+
+{
+    my $visitor = IOC::Visitor::ServiceLocator->new("/test/test_it/Fail");
+    isa_ok($visitor, 'IOC::Visitor::ServiceLocator');
+    
+    throws_ok {
+        $container->accept($visitor);
+    } "IOC::UnableToLocateService", '... got the error we expected';  
+}
+
+{
+    my $visitor = IOC::Visitor::ServiceLocator->new("../test/Fail");
+    isa_ok($visitor, 'IOC::Visitor::ServiceLocator');
+    
+    throws_ok {
+        $container->accept($visitor);
+    } "IOC::UnableToLocateService", '... got the error we expected';  
+}
 
 # check our errors
 

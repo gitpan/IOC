@@ -4,7 +4,7 @@ package IOC::Visitor::ServiceLocator;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Scalar::Util qw(blessed);
 
@@ -35,18 +35,25 @@ sub visit {
     if ($self->{path} =~ /^\//) {
         # start at the root
         my $current = $container->findRootContainer();
-        $current = $current->getSubContainer(shift @path) while @path;
+        foreach my $container_name (@path) {
+            eval { 
+                $current = $current->getSubContainer($container_name);
+            };
+            throw IOC::UnableToLocateService "Could not locate the service at path '" . $self->{path} . "' failed at '$container_name'", $@ if $@;
+        }
         $service = $current->get($service_name);
     }
     else {
         my $current = $container;
-        while (@path) {
-            my $container_name = shift @path;
+        foreach my $container_name (@path) {
             if ($container_name eq '..') {
                 $current = $current->getParentContainer();            
             }
             else {
-                $current = $current->getSubContainer($container_name);
+                eval {
+                    $current = $current->getSubContainer($container_name);
+                };
+                throw IOC::UnableToLocateService "Could not locate the service at path '" . $self->{path} . "' failed at '$container_name'", $@ if $@;                
             }
         }
         $service = $current->get($service_name);         
