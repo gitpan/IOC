@@ -1,5 +1,12 @@
 Revision history for Perl extension IOC.
 
+0.17 Wed Dec 15 2004
+    * IOC::Container
+        - added code to make sure that proxied instances
+          do not get re-proxied when they are retrieved
+          with get() again. 
+            - added tests for this
+
 0.16 Fri Nov 26 2004
     * IOC::Service
         - added the deferred() method, which will

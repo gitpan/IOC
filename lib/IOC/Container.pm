@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use Scalar::Util qw(blessed);
 
@@ -177,7 +177,9 @@ sub get {
     $self->_lockService($name);   
     my $instance = $self->{services}->{$name}->instance();
     $self->_unlockService($name);      
-    return $self->{proxies}->{$name}->wrap($instance) if exists ${$self->{proxies}}{$name};
+    if (blessed($instance) && ref($instance) !~ /\:\:\_\:\:Proxy$/) {
+        return $self->{proxies}->{$name}->wrap($instance) if exists ${$self->{proxies}}{$name};
+    }
     return $instance;
 }
 

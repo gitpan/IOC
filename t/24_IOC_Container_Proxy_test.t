@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 26;
+use Test::More tests => 27;
 use Test::Exception;
 
 BEGIN { 
@@ -57,6 +57,10 @@ is_deeply(\@one_method_calls, [
             [ $proxy_one_server, 'test_proxy_one', 'Test::Proxy::One::test_proxy_one', [ $proxy_one ]]
             ], '... got the method calls we expected');
         
+
+my $proxy_temp = $container->get('proxy_one');
+# check to make sure we are not getting double proxied
+ok(!UNIVERSAL::isa($unproxy_one, 'Test::Proxy::One::_::Proxy::_::Proxy'), '... we are not being double proxied');
 
 my @two_method_calls;
 my $proxy_two_server = IOC::Proxy->new({
