@@ -4,7 +4,7 @@ package IOC::Service::SetterInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use IOC::Exceptions;
 
@@ -32,14 +32,14 @@ sub _init {
         $name,
         sub {
             my $c = shift;
+            # check if there is an entry in the 
+            # symbol table for this class already
+            # (meaning it has been loaded) and if 
+            # not, then require it            
             eval { 
                 no strict 'refs';
-                # check if there is an entry in the 
-                # symbol table for this class already
-                # (meaning it has been loaded) and if 
-                # not, then require it
-                %{"${component_class}::"} || require $component_class 
-            };
+                %{"${component_class}::"};
+            } || eval "use $component_class";
             # throw our exception if the class fails to load
             throw IOC::ClassLoadingError "The class '$component_class' could not be loaded" => $@ if $@;
             # check to see if the specified 

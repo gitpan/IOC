@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 34;
+use Test::More tests => 39;
 use Test::Exception;
 
 BEGIN {    
@@ -115,6 +115,24 @@ can_ok("IOC::Service::ConstructorInjection", 'new');
     my $logger = $service->instance();
     isa_ok($logger, 'Logger');
     isa_ok($logger->{file}, 'File');
+}
+
+{ # load a service class
+
+    my $container = IOC::Container->new('ClassLoading');
+    isa_ok($container, 'IOC::Container');
+    
+    my $service = IOC::Service::ConstructorInjection->new('container' => ('IOC::Container::MethodResolution', 'new' => []));
+    isa_ok($service, 'IOC::Service::ConstructorInjection');
+    isa_ok($service, 'IOC::Service');
+    
+    $container->register($service);
+    
+    my $instance;
+    lives_ok {
+        $instance = $service->instance();
+    } '... and the service loads correctly';
+    isa_ok($instance, 'IOC::Container::MethodResolution');
 }
 
 # check some errors now

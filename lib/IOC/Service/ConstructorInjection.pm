@@ -4,7 +4,7 @@ package IOC::Service::ConstructorInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Scalar::Util qw(blessed);
 
@@ -35,14 +35,14 @@ sub _init {
         sub {
             # get the IOC::Container object
             my $c = shift;
+            # check if there is an entry in the 
+            # symbol table for this class already
+            # (meaning it has been loaded) and if 
+            # not, then require it            
             eval { 
                 no strict 'refs';
-                # check if there is an entry in the 
-                # symbol table for this class already
-                # (meaning it has been loaded) and if 
-                # not, then require it
-                %{"${component_class}::"} || require $component_class 
-            };
+                %{"${component_class}::"};
+            } || eval "use $component_class";
             # throw our exception if the class fails to load
             throw IOC::ClassLoadingError "The class '$component_class' could not be loaded" => $@ if $@;
             # check to see if the specified 

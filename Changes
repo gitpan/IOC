@@ -1,5 +1,14 @@
 Revision history for Perl extension IOC.
 
+0.22 Mon Dec 27 2004
+    * IOC::Service::ConstructorInjection
+    * IOC::Service::SetterInjection    
+        - fixed class loading error in both, these
+          services will load your class if it is not
+          loaded already, and they were not doing
+          it correctly. 
+            - added tests to confirm fixes
+
 0.21 Sat Dec 25 2004 (Merry Christmas)
     + Added IOC::Service::Literal
         - this is an optimization to allow for literal
