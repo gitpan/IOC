@@ -4,7 +4,7 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use IOC::Exceptions;
 
@@ -41,6 +41,12 @@ sub setContainer {
     (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
         || throw IOC::InsufficientArguments "container argument is incorrect";
     $self->{container} = $container;
+    $self;
+}
+
+sub removeContainer {
+    my ($self) = @_;
+    $self->{container} = undef;
     $self;
 }
 
@@ -128,6 +134,10 @@ Returns the name of the service instance.
 =item B<setContainer ($container)>
 
 Given a C<$container>, which is an instance of IOC::Container or a subclass of it, this method will associate the service instance with that container object.
+
+=item B<removeContainer>
+
+This will break the connection between a service and a container. This method is usually only called by the C<unregister> method in L<IOC::Container>.
 
 =item B<instance>
 

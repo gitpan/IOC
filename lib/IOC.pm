@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use IOC::Exceptions;
 
@@ -276,9 +276,9 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a    5.4  100.0
  IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    5.5  100.0
  IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0   22.6   98.3
- IOC/Container.pm                               100.0   97.5   93.1  100.0  100.0   29.1   98.6
+ IOC/Container.pm                               100.0   97.7   93.1  100.0  100.0   35.8   98.7
  IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.2  100.0
- IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   10.8   97.4
+ IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   13.0   97.6
  IOC/Service/ConstructorInjection.pm            100.0  100.0   77.8  100.0  100.0    3.6   97.4
  IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    7.1   97.3
  IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    1.7  100.0
@@ -352,6 +352,12 @@ Here is a list of Ruby IoC Frameworks
 L<http://copland.rubyforge.org/>
 
 I have only skimmed this site, but it seems that Copland is inspired by HiveMind.
+
+=item Needle
+
+L<http://needle.rubyforge.org/>
+
+I have only skimmed this site, but it seems that Needle is a lightweight version of Copland.
 
 =item Rico 
 

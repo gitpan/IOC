@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -131,6 +131,17 @@ sub register {
     $service->setContainer($self);
     $self->{services}->{$name} = $service;
     $self;
+}
+
+sub unregister {
+    my ($self, $name) = @_;
+    (defined($name)) || throw IOC::InsufficientArguments "You must provide a service name to unregister";
+    (exists ${$self->{services}}{$name}) 
+        || throw IOC::ServiceNotFound "Unknown Service '${name}'"; 
+    my $service = $self->{services}->{$name};
+    $service->removeContainer();    
+    delete $self->{services}->{$name};
+    return $service;
 }
 
 sub get {
@@ -281,6 +292,10 @@ Given a C<$service>, this will register the C<$service> as part of this containe
 If C<$service> is not an instance of IOC::Service, or a subclass of it, an B<IOC::InsufficientArguments> exception will be thrown.
 
 If the name of C<$service> already exists, then a B<IOC::ServiceAlreadyExists> exception is thrown.
+
+=item B<unregister ($name)>
+
+Given a C<$name> this will remove the service from the container. If there is no service by that C<$name>, then a B<IOC::ServiceNotFound> exception is thrown.
 
 =item B<get ($name)>
 

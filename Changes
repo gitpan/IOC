@@ -1,5 +1,17 @@
 Revision history for Perl extension IOC.
 
+0.08 Fri Nov 5 2004
+	* IOC::Container
+        - added the 'unregister' method to remove 
+          allow a IOC::Service to be removed
+            ~ added tests and documentation
+                      
+    * IOC::Service
+        - added the 'removeContainer' method to 
+          facilitate the IOC::Container->unregister
+          method
+            ~ added tests and documentation
+
 0.07 Thurs Oct 21 2004
     > Improved documentation for all classes, however
       I still have more to write

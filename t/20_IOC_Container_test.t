@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 23;
+use Test::More tests => 28;
 use Test::Exception;
 
 BEGIN { 
@@ -87,6 +87,27 @@ throws_ok {
     $container->hasService()
 } "IOC::InsufficientArguments", '... got the error we expected';
 
-# just call destroy... 
+can_ok($container, 'unregister');
+
+throws_ok {
+    $container->unregister();
+} "IOC::InsufficientArguments", '... got the error we expected';
+
+throws_ok {
+    $container->unregister('Fail');
+} "IOC::ServiceNotFound", '... got the error we expected';
+
+lives_ok {
+    $container->unregister('logger');
+} '... removed the logger successfully';
+
+is_deeply(
+        [ $container->getServiceList() ],
+        [ ],
+        '... there are no more services installed');
+        
+# register it again so that we can all DESTROY
+
+$container->register($service);
 
 $container->DESTROY();
