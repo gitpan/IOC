@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -25,6 +25,7 @@ sub new {
 sub _init {
     my ($self, $name) = @_;
     $self->{services} = {};
+    $self->{proxies} = {};
     $self->{sub_containers} = {};
     $self->{parent_container} = undef;
     $self->{name} = $name || 'default';
@@ -144,12 +145,32 @@ sub unregister {
     return $service;
 }
 
+sub registerWithProxy {
+    my ($self, $service, $proxy) = @_;
+    $self->register($service);
+    $self->addProxy($service->name(), $proxy);
+    $self;
+}
+
+sub addProxy {
+    my ($self, $name, $proxy) = @_;
+    (defined($name)) || throw IOC::InsufficientArguments "You must provide a valid service name";    
+    (defined($proxy) && ref($proxy) && UNIVERSAL::isa($proxy, 'IOC::Proxy'))
+        || throw IOC::InsufficientArguments "You must provide a valid IOC::Proxy object to register";    
+    (exists ${$self->{services}}{$name}) 
+        || throw IOC::ServiceNotFound "Unknown Service '${name}'";    
+    $self->{proxies}->{$name} = $proxy;
+    $self;
+}
+
 sub get {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
     (exists ${$self->{services}}{$name}) 
         || throw IOC::ServiceNotFound "Unknown Service '${name}'";
-    $self->{services}->{$name}->instance();
+    my $instance = $self->{services}->{$name}->instance();
+    return $self->{proxies}->{$name}->wrap($instance) if exists ${$self->{proxies}}{$name};
+    return $instance;
 }
 
 sub find {
@@ -256,16 +277,25 @@ IOC::Container - An IOC Container object
 
 In this IOC framework, the IOC::Container object holds instances of IOC::Service objects keyed by strings. It can also have sub-containers, which are instances of IOC::Container objects also keyed by string.
 
- +------------------+                  +--------------+                 +-------------------------+
- |  IOC::Container  |---(*services)--->| IOC::Service |---(instance)--->| <Your Component/Object> |
- +------------------+                  +--------------+                 +-------------------------+
-           |
-   (*sub-containers)
-           | 
-           V    
- +------------------+
- |  IOC::Container  |
- +------------------+  
+                    +------------------+
+                    |  IOC::Container  |
+                    +---------+--------+
+                              |
+           +------------------+-----------------+
+           |                  |                 |
+   (*sub-containers)     (*proxies)        (*services)
+           |                  |                 |
+           V                  V                 V
+ +------------------+  +--------------+  +--------------+
+ |  IOC::Container  |  |  IOC::Proxy  |  | IOC::Service |
+ +------------------+  +--------------+  +--------------+
+                                                |
+                                            (instance)
+                                                |
+                                                V
+                                    +-------------------------+                                                
+                                    | <Your Component/Object> |
+                                    +-------------------------+
 
 =head1 METHODS
 
@@ -296,6 +326,14 @@ If the name of C<$service> already exists, then a B<IOC::ServiceAlreadyExists> e
 =item B<unregister ($name)>
 
 Given a C<$name> this will remove the service from the container. If there is no service by that C<$name>, then a B<IOC::ServiceNotFound> exception is thrown.
+
+=item B<registerWithProxy ($service, $proxy)>
+
+Same as C<register> but also registers a C<$proxy> object to wrap the C<$service> object with.
+
+=item B<addProxy ($name, $proxy)>
+
+Adds a C<$proxy> object to wrap the service at C<$name>.
 
 =item B<get ($name)>
 

@@ -1,5 +1,18 @@
 Revision history for Perl extension IOC.
 
+0.09 Mon Nov 5 2004
+    + added IOC::Proxy
+        - added tests and documentation for this 
+    
+    * IOC::Exceptions
+        - added the IOC::OperationFailed exception
+        
+    * IOC::Container
+        - added the proxy related functions and all
+          the code to handle it
+            ~ added tests and documentation 
+              for this functionality
+
 0.08 Fri Nov 5 2004
 	* IOC::Container
         - added the 'unregister' method to remove 

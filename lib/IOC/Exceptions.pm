@@ -4,7 +4,7 @@ package IOC::Exceptions;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Class::Throwable qw(
         IOC::NotFound
@@ -18,6 +18,7 @@ use Class::Throwable qw(
         IOC::ClassLoadingError
         IOC::ConstructorNotFound
         IOC::MethodNotFound
+        IOC::OperationFailed
         );
 
 $Class::Throwable::DEFAULT_VERBOSITY = 2;
@@ -63,6 +64,8 @@ This module creates a number of exception classes which are used in other parts 
 =item B<IOC::ConstructorNotFound>
 
 =item B<IOC::MethodNotFound>
+
+=item B<IOC::OperationFailed>
 
 =back
 

@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use IOC::Exceptions;
 
@@ -128,6 +128,10 @@ This package mostly serves as a namespace placeholder and to load the base frame
 =item L<IOC::Registry>
 
 This is a singleton registry which can be used to store and search IOC::Container objects/hierarchies.
+
+=item L<IOC::Proxy>
+
+This package can be used alone or as a base class and be used to proxy service instances. 
 
 =back
 
@@ -273,22 +277,23 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  File                                            stmt branch   cond    sub    pod   time  total
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
  IOC.pm                                         100.0    n/a    n/a  100.0    n/a    3.3  100.0
- IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a    5.4  100.0
+ IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a    6.0  100.0
  IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    5.5  100.0
- IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0   22.6   98.3
- IOC/Container.pm                               100.0   97.7   93.1  100.0  100.0   35.8   98.7
- IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.2  100.0
- IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   13.0   97.6
- IOC/Service/ConstructorInjection.pm            100.0  100.0   77.8  100.0  100.0    3.6   97.4
- IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    7.1   97.3
- IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    1.7  100.0
- IOC/Service/Prototype/ConstructorInjection.pm  100.0    n/a    n/a  100.0    n/a    0.6  100.0
- IOC/Service/Prototype/SetterInjection.pm       100.0    n/a    n/a  100.0    n/a    0.6  100.0
- IOC/Visitor/SearchForContainer.pm              100.0  100.0   77.8  100.0  100.0    2.7   96.6
- IOC/Visitor/SearchForService.pm                100.0  100.0   77.8  100.0  100.0    1.9   96.7
- IOC/Visitor/ServiceLocator.pm                  100.0  100.0   77.8  100.0  100.0    3.8   96.9
+ IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.9   98.3
+ IOC/Proxy.pm                                   100.0   95.5   81.8   92.3  100.0    8.4   97.0
+ IOC/Container.pm                               100.0   98.1   94.3  100.0  100.0   30.2   98.9
+ IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.4  100.0
+ IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   20.7   97.6
+ IOC/Service/ConstructorInjection.pm            100.0  100.0   77.8  100.0  100.0    3.4   97.4
+ IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    3.4   97.3
+ IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    1.5  100.0
+ IOC/Service/Prototype/ConstructorInjection.pm  100.0    n/a    n/a  100.0    n/a    0.7  100.0
+ IOC/Service/Prototype/SetterInjection.pm       100.0    n/a    n/a  100.0    n/a    0.7  100.0
+ IOC/Visitor/SearchForContainer.pm              100.0  100.0   77.8  100.0  100.0    1.5   96.6
+ IOC/Visitor/SearchForService.pm                100.0  100.0   77.8  100.0  100.0    2.0   96.7
+ IOC/Visitor/ServiceLocator.pm                  100.0  100.0   77.8  100.0  100.0    3.2   96.9
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                          100.0   98.7   83.2  100.0  100.0  100.0   98.1
+ Total                                          100.0   98.4   83.9   99.3  100.0  100.0   98.0
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
