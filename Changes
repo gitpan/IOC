@@ -1,5 +1,20 @@
 Revision history for Perl extension IOC.
 
+0.20 Thurs Dec 23 2004
+    * IOC::Service::ConstructorInjection
+        - added support for getting constructor args
+          which are outside of the current container
+          and can be located with find()
+            - added tests for this
+            - added to the docs for this
+            
+    * IOC::Service::SetterInjection
+        - added support for getting setter args
+          which are outside of the current container
+          and can be located with find()
+            - added tests for this
+            - added to the docs for this
+
 0.19 Thurs Dec 23 2004
     * IOC::Proxy
         - fixed an issue with how overloaded

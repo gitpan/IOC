@@ -4,7 +4,7 @@ package IOC::Service::SetterInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use IOC::Exceptions;
 
@@ -56,7 +56,12 @@ sub _init {
                 my $setter_method = $instance->can($setter_key);
                 (defined($setter_method))
                     || throw IOC::MethodNotFound "Could not resolve setter method '$setter_key'";
-                $instance->$setter_method($c->get($setter_value));
+                if ($setter_value =~ /\//) {
+                    $instance->$setter_method($c->find($setter_value));
+                }
+                else {
+                    $instance->$setter_method($c->get($setter_value));
+                }
             }                
             return $instance;            
         }
@@ -77,7 +82,9 @@ IOC::Service::SetterInjection - An IOC Service object which uses Setter Injectio
   
   my $service = IOC::Service::SetterInjection->new('logger' => (
                     'FileLogger', 'new', [
-                        { setLogFileHandle => 'log_file_handle' },
+                        # fetch a component from another container
+                        { setLogFileHandle => '/filesystem/log_file_handle' },
+                        # fetch a component from our own container
                         { setLogFileFormat => 'log_file_format' }
                     ]));
 
@@ -107,7 +114,7 @@ If the C<$component_class> and C<$component_constructor> arguments are not defin
 
 Upon request of the component managed by this service, an attempt will be made to load the C<$component_class>. If that loading fails, an B<IOC::ClassLoadingError> exception will be thrown with the details of the underlying error. If the C<$component_class> loads successfully, then it will be inspected for an available C<$component_constructor> method. If the C<$component_constructor> method is not found, an B<IOC::ConstructorNotFound> exception will be thrown. If the C<$component_constructor> method is found, then it will be called.
 
-Once a valid instance has been created, then the C<$setter_parameter> array ref is looped through. Each parameter is then a hash ref, the key being the setter method name and the value being the name of a Service. It is then checked if the setter method is available, if not a B<IOC::MethodNotFound> exception is thrown. It if is found, then it is called and passed the value of the resolved service name.
+Once a valid instance has been created, then the C<$setter_parameter> array ref is looped through. Each parameter is then a hash ref, the key being the setter method name and the value being the name of a Service (available through C<get> or C<find>). It is then checked if the setter method is available, if not a B<IOC::MethodNotFound> exception is thrown. It if is found, then it is called and passed the value of the resolved service name.
 
 =back
 

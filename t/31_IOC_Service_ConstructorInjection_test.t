@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 18;
+use Test::More tests => 34;
 use Test::Exception;
 
 BEGIN {    
@@ -27,56 +27,127 @@ BEGIN {
 
 can_ok("IOC::Service::ConstructorInjection", 'new');
 
-my $service = IOC::Service::ConstructorInjection->new('logger' => 
-                                ('Logger', 'new' => [ 
-                                    IOC::Service::ConstructorInjection->ComponentParameter('file'),
-                                    "Log %d %s"
-                                ]));
-isa_ok($service, 'IOC::Service::ConstructorInjection');
-isa_ok($service, 'IOC::Service');
+{
+    my $service = IOC::Service::ConstructorInjection->new('logger' => 
+                                    ('Logger', 'new' => [ 
+                                        IOC::Service::ConstructorInjection->ComponentParameter('file'),
+                                        "Log %d %s"
+                                    ]));
+    isa_ok($service, 'IOC::Service::ConstructorInjection');
+    isa_ok($service, 'IOC::Service');
+    
+    my $service2 = IOC::Service::ConstructorInjection->new('file' => ('File', 'new', []));
+    isa_ok($service2, 'IOC::Service::ConstructorInjection');
+    isa_ok($service2, 'IOC::Service');
+    
+    my $container = IOC::Container->new();
+    isa_ok($container, 'IOC::Container');
+    
+    $container->register($service);
+    $container->register($service2);
+    
+    can_ok($service, 'instance');
+    
+    my $logger = $service->instance();
+    isa_ok($logger, 'Logger');
+    isa_ok($logger->{file}, 'File');
+}
 
-my $service2 = IOC::Service::ConstructorInjection->new('file' => ('File', 'new', []));
-isa_ok($service2, 'IOC::Service::ConstructorInjection');
-isa_ok($service2, 'IOC::Service');
+{ # find a service from the root
 
-my $container = IOC::Container->new();
-isa_ok($container, 'IOC::Container');
+    my $logging_container = IOC::Container->new('Logging');
+    isa_ok($logging_container, 'IOC::Container');
+    
+    my $service = IOC::Service::ConstructorInjection->new('logger' => 
+                                    ('Logger', 'new' => [ 
+                                        IOC::Service::ConstructorInjection->ComponentParameter('/Files/file'),
+                                        "Log %d %s"
+                                    ]));
+    isa_ok($service, 'IOC::Service::ConstructorInjection');
+    isa_ok($service, 'IOC::Service');
+    
+    $logging_container->register($service);
+    
+    my $service2 = IOC::Service::ConstructorInjection->new('file' => ('File', 'new', []));
+    isa_ok($service2, 'IOC::Service::ConstructorInjection');
+    isa_ok($service2, 'IOC::Service');
+    
+    my $files_container = IOC::Container->new('Files');
+    isa_ok($files_container, 'IOC::Container');
+    
+    $files_container->register($service2);
+    
+    my $container = IOC::Container->new();
+    $container->addSubContainer($files_container);    
+    $container->addSubContainer($logging_container);
+    
+    my $logger = $service->instance();
+    isa_ok($logger, 'Logger');
+    isa_ok($logger->{file}, 'File');
+}
 
-$container->register($service);
-$container->register($service2);
+{ # find a sub-service
 
-can_ok($service, 'instance');
-
-my $logger = $service->instance();
-isa_ok($logger, 'Logger');
-isa_ok($logger->{file}, 'File');
+    my $logging_container = IOC::Container->new('Logging');
+    isa_ok($logging_container, 'IOC::Container');
+    
+    my $service = IOC::Service::ConstructorInjection->new('logger' => 
+                                    ('Logger', 'new' => [ 
+                                        IOC::Service::ConstructorInjection->ComponentParameter('Files/file'),
+                                        "Log %d %s"
+                                    ]));
+    isa_ok($service, 'IOC::Service::ConstructorInjection');
+    isa_ok($service, 'IOC::Service');
+    
+    $logging_container->register($service);
+    
+    my $service2 = IOC::Service::ConstructorInjection->new('file' => ('File', 'new', []));
+    isa_ok($service2, 'IOC::Service::ConstructorInjection');
+    isa_ok($service2, 'IOC::Service');
+    
+    my $files_container = IOC::Container->new('Files');
+    isa_ok($files_container, 'IOC::Container');
+    
+    $files_container->register($service2);
+    
+    $logging_container->addSubContainer($files_container);    
+    
+    my $logger = $service->instance();
+    isa_ok($logger, 'Logger');
+    isa_ok($logger->{file}, 'File');
+}
 
 # check some errors now
+{
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file');
+    } "IOC::InsufficientArguments", '... cannot create a constructor injection without a component class';
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file' => ("Fail"));
+    } "IOC::InsufficientArguments", '... cannot create a constructor injection without a component class constructor';
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file' => ("Fail", 'new'));
+    } "IOC::InsufficientArguments", '... cannot create a constructor injection without a parameter list';
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file' => ("Fail", 'new', "Fail"));
+    } "IOC::InsufficientArguments", '... cannot create a constructor injection without an array ref as parameter list';
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file' => ("Fail", 'new', {}));
+    } "IOC::InsufficientArguments", '... cannot create a constructor injection without an array ref as parameter list';
+    
+    my $container = IOC::Container->new();
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file2' => ("Fail", 'new', []))->setContainer($container)->instance;
+    } "IOC::ClassLoadingError", '... cannot create a constructor injection without real class';
+    
+    throws_ok {
+        IOC::Service::ConstructorInjection->new('file3' => ("File", 'noNew', []))->setContainer($container)->instance;
+    } "IOC::ConstructorNotFound", '... cannot create a constructor injection without a proper class constructor name';
 
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file');
-} "IOC::InsufficientArguments", '... cannot create a constructor injection without a component class';
-
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file' => ("Fail"));
-} "IOC::InsufficientArguments", '... cannot create a constructor injection without a component class constructor';
-
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file' => ("Fail", 'new'));
-} "IOC::InsufficientArguments", '... cannot create a constructor injection without a parameter list';
-
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file' => ("Fail", 'new', "Fail"));
-} "IOC::InsufficientArguments", '... cannot create a constructor injection without an array ref as parameter list';
-
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file' => ("Fail", 'new', {}));
-} "IOC::InsufficientArguments", '... cannot create a constructor injection without an array ref as parameter list';
-
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file2' => ("Fail", 'new', []))->setContainer($container)->instance;
-} "IOC::ClassLoadingError", '... cannot create a constructor injection without real class';
-
-throws_ok {
-    IOC::Service::ConstructorInjection->new('file3' => ("File", 'noNew', []))->setContainer($container)->instance;
-} "IOC::ConstructorNotFound", '... cannot create a constructor injection without a proper class constructor name';
+}

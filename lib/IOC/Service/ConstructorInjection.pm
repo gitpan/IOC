@@ -4,7 +4,7 @@ package IOC::Service::ConstructorInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use Scalar::Util qw(blessed);
 
@@ -68,7 +68,12 @@ sub _init {
                 # and use the IOC::Container to get an
                 # instance of that service and replace 
                 # that in the parameters array
-                $parameters[$i] = $c->get(${$parameters[$i]});
+                if (${$parameters[$i]} =~ /\//) {
+                    $parameters[$i] = $c->find(${$parameters[$i]});
+                }
+                else {
+                    $parameters[$i] = $c->get(${$parameters[$i]});                
+                }
             }                
             # now we have the class loaded, 
             # the constructor confirmed, and
@@ -110,6 +115,16 @@ IOC::Service::ConstructorInjection - An IOC Service object which uses Constructo
                         "some other argument"
                     ]));
 
+  # this will call :
+  #    FileLogger->new($container->find('/files/log_file'), "some other argument") 
+  # when it creates a logger 
+  # component instance
+  my $service = IOC::Service::ConstructorInjection->new('logger' => (
+                    'FileLogger', 'new', [
+                        IOC::Service::ConstructorInjection->ComponentParameter('/files/log_file'),
+                        "some other argument"
+                    ]));
+
 =head1 DESCRIPTION
 
 In this IOC framework, the IOC::Service::ConstructorInjection object holds instances of components to be managed.
@@ -144,7 +159,7 @@ Upon request of the component managed by this service, an attempt will be made t
 
 =item B<ComponentParameter ($component_name)>
 
-Given a C<$component_name> this will create a place holder suitable for placement in the C<$parameters> argument of the C<new> method. The C<$component_name> must be the name of a valid service within the container of the requesting service.
+Given a C<$component_name> this will create a place holder suitable for placement in the C<$parameters> argument of the C<new> method. The C<$component_name> must be a valid service name available to the service either through C<get> or C<find>.
 
 =back
 

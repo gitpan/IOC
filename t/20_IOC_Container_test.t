@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 28;
+use Test::More tests => 32;
 use Test::Exception;
 
 BEGIN { 
@@ -19,6 +19,7 @@ isa_ok($container, 'IOC::Container');
 can_ok($container, 'name');
 can_ok($container, 'register');
 can_ok($container, 'get');
+can_ok($container, 'find');
 
 is($container->name(), 'default', '... our container is named default');
 
@@ -67,6 +68,13 @@ my $fetched_service;
 
 lives_ok {
     $fetched_service = $container->get('logger')
+} '... got the service successfully';
+
+ok(defined($fetched_service), '... we got a fetched service');
+is($fetched_service, 'Logger', '... and it is the service instance we expected');
+
+lives_ok {
+    $fetched_service = $container->find('logger')
 } '... got the service successfully';
 
 ok(defined($fetched_service), '... we got a fetched service');
