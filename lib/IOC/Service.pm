@@ -152,7 +152,7 @@ IOC::Service - An IOC Service object
   use IOC::Service;
   
   my $container = IOC::Container->new();
-  $container->register(IOC::Service->new('log_file' => sub { "logfile.log" }));
+  $container->register(IOC::Service::Literal->new('log_file' => "logfile.log"));
   $container->register(IOC::Service->new('logger' => sub { 
       my $c = shift; 
       return FileLogger->new($c->get('log_file'));

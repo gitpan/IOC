@@ -40,7 +40,7 @@ IOC::Container::MethodResolution - An IOC Container object which support method 
   use IOC::Container;
   
   my $container = IOC::Container->new();
-  $container->register(IOC::Service->new('log_file' => sub { "logfile.log" }));
+  $container->register(IOC::Service::Literal->new('log_file' => "logfile.log"));
   $container->register(IOC::Service->new('logger' => sub { 
       my $c = shift; 
       return FileLogger->new($c->log_file());
@@ -63,16 +63,16 @@ IOC::Container::MethodResolution - An IOC Container object which support method 
       my $c = shift;
       return My::FileLogger->new($c->root()->filesystem()->filemanager()->openFile($c->log_file()));
   }));
-  $logging->register(IOC::Service->new('log_file' => sub { '/var/my_app.log' })); 
+  $logging->register(IOC::Service::Literal->new('log_file' => '/var/my_app.log')); 
   
   my $database = IOC::Container->new('database');
   $database->register(IOC::Service->new('connection' => sub {
       my $c = shift;
       return My::DB->connect($c->dsn(), $c->username(), $c->password());
   }));
-  $database->register(IOC::Service->new('dsn' => sub { 'dbi:mysql:my_app' }));
-  $database->register(IOC::Service->new('username' => sub { 'test' }));
-  $database->register(IOC::Service->new('password' => sub { 'secret_test' }));          
+  $database->register(IOC::Service::Literal->new('dsn'      => 'dbi:mysql:my_app'));
+  $database->register(IOC::Service::Literal->new('username' => 'test'));
+  $database->register(IOC::Service::Literal->new('password' => 'secret_test'));          
   
   my $file_system = IOC::Container->new('filesystem');
   $file_system->register(IOC::Service->new('filemanager' => sub { return My::FileManager->new() })); 

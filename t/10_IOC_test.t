@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 19;
+use Test::More tests => 20;
 use Test::Exception;
 
 BEGIN { 
@@ -19,7 +19,9 @@ BEGIN {
     
     use_ok('IOC::Service');    
         use_ok('IOC::Service::ConstructorInjection'); 
-        use_ok('IOC::Service::SetterInjection');     
+        use_ok('IOC::Service::SetterInjection');   
+        
+        use_ok('IOC::Service::Literal');     
         
         use_ok('IOC::Service::Prototype'); 
             use_ok('IOC::Service::Prototype::ConstructorInjection'); 
@@ -60,7 +62,7 @@ BEGIN {
 lives_ok {
 
     my $container = IOC::Container->new();
-    $container->register(IOC::Service->new('log_file' => sub { "logfile.log" }));
+    $container->register(IOC::Service::Literal->new('log_file' => "logfile.log"));
     $container->register(IOC::Service->new('logger' => sub { 
         my $c = shift; 
         return FileLogger->new($c->get('log_file'));
@@ -132,16 +134,16 @@ lives_ok {
         my $c = shift;
         return My::FileLogger->new($c->find('/filesystem/filemanager')->openFile($c->get('log_file')));
     }));
-    $logging->register(IOC::Service->new('log_file' => sub { '/var/my_app.log' }));
+    $logging->register(IOC::Service::Literal->new('log_file' => '/var/my_app.log'));
     
     my $database = IOC::Container->new('database');
     $database->register(IOC::Service->new('connection' => sub {
         my $c = shift;
         return My::DB->connect($c->get('dsn'), $c->get('username'), $c->get('password'));
     }));
-    $database->register(IOC::Service->new('dsn' => sub { 'dbi:mysql:my_app' }));
-    $database->register(IOC::Service->new('username' => sub { 'test' }));
-    $database->register(IOC::Service->new('password' => sub { 'secret_test' }));          
+    $database->register(IOC::Service::Literal->new('dsn'      => 'dbi:mysql:my_app'));
+    $database->register(IOC::Service::Literal->new('username' => 'test'));
+    $database->register(IOC::Service::Literal->new('password' => 'secret_test'));          
     
     my $file_system = IOC::Container->new('filesystem');
     $file_system->register(IOC::Service->new('filemanager' => sub { return My::FileManager->new() }));

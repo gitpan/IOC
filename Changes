@@ -1,5 +1,19 @@
 Revision history for Perl extension IOC.
 
+0.21 Sat Dec 25 2004 (Merry Christmas)
+    + Added IOC::Service::Literal
+        - this is an optimization to allow for literal
+          values to be held as services without them 
+          needing to be wrapped in subroutines.
+        - added documentation for this
+        - added tests for this
+        
+    * IOC::Container
+        - optmized this for IOC::Service::Literal objects
+          since they cannot have dependencies, and therefore
+          cannot have circular references there is no need to 
+          fuss with them (lock, deferred, etc). 
+
 0.20 Thurs Dec 23 2004
     * IOC::Service::ConstructorInjection
         - added support for getting constructor args

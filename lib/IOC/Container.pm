@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 use Scalar::Util qw(blessed);
 
@@ -170,7 +170,12 @@ sub get {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
     (exists ${$self->{services}}{$name}) 
-        || throw IOC::ServiceNotFound "Unknown Service '${name}'";  
+        || throw IOC::ServiceNotFound "Unknown Service '${name}'";
+    # a literal object can have no dependencies, 
+    # and therefore can have no circular refs, so
+    # we can optimize their usage there as well
+    return $self->{services}->{$name}->instance() 
+        if $self->{services}->{$name}->isa('IOC::Service::Literal');
     if ($self->_isServiceLocked($name)) {
         return $self->{services}->{$name}->deferred();
     }
@@ -254,7 +259,7 @@ IOC::Container - An IOC Container object
   use IOC::Container;
   
   my $container = IOC::Container->new();
-  $container->register(IOC::Service->new('log_file' => sub { "logfile.log" }));
+  $container->register(IOC::Service::Literal->new('log_file' => "logfile.log"));
   $container->register(IOC::Service->new('logger' => sub { 
       my $c = shift; 
       return FileLogger->new($c->get('log_file'));
@@ -278,16 +283,16 @@ IOC::Container - An IOC Container object
       my $c = shift;
       return My::FileLogger->new($c->find('/filesystem/filemanager')->openFile($c->get('log_file')));
   }));
-  $logging->register(IOC::Service->new('log_file' => sub { '/var/my_app.log' })); 
+  $logging->register(IOC::Service::Literal->new('log_file' => '/var/my_app.log')); 
   
   my $database = IOC::Container->new('database');
   $database->register(IOC::Service->new('connection' => sub {
       my $c = shift;
       return My::DB->connect($c->get('dsn'), $c->get('username'), $c->get('password'));
   }));
-  $database->register(IOC::Service->new('dsn' => sub { 'dbi:mysql:my_app' }));
-  $database->register(IOC::Service->new('username' => sub { 'test' }));
-  $database->register(IOC::Service->new('password' => sub { 'secret_test' }));          
+  $database->register(IOC::Service::Literal->new('dsn'      => 'dbi:mysql:my_app'));
+  $database->register(IOC::Service::Literal->new('username' => 'test'));
+  $database->register(IOC::Service::Literal->new('password' => 'secret_test'));          
   
   my $file_system = IOC::Container->new('filesystem');
   $file_system->register(IOC::Service->new('filemanager' => sub { return My::FileManager->new() })); 

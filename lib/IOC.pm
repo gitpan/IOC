@@ -4,12 +4,13 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.20';
+our $VERSION = '0.21';
 
 use IOC::Exceptions;
 
 use IOC::Container;
 use IOC::Service;
+use IOC::Service::Literal;
 use IOC::Registry;
 use IOC::Proxy;
 
@@ -26,7 +27,7 @@ IOC - A lightweight IOC (Inversion of Control) framework
   use IOC;
   
   my $container = IOC::Container->new();
-  $container->register(IOC::Service->new('log_file' => sub { "logfile.log" }));
+  $container->register(IOC::Service::Literal->new('log_file' => "logfile.log"));
   $container->register(IOC::Service->new('logger' => sub { 
       my $c = shift; 
       return FileLogger->new($c->get('log_file'));
@@ -293,25 +294,26 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
  File                                            stmt branch   cond    sub    pod   time  total
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- IOC.pm                                         100.0    n/a    n/a  100.0    n/a    3.3  100.0
- IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a    6.0  100.0
- IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    5.5  100.0
- IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.9   98.3
- IOC/Proxy.pm                                   100.0   91.7   81.8  100.0  100.0   14.7   97.4
- IOC/Proxy/Interfaces.pm                        100.0  100.0    n/a  100.0    n/a    1.0  100.0
- IOC/Container.pm                               100.0   98.1   90.0  100.0  100.0   29.9   98.9
- IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.4  100.0
- IOC/Service.pm                                  89.2   78.6   60.0   88.0  100.0   12.4   84.6
- IOC/Service/ConstructorInjection.pm            100.0  100.0   75.0  100.0  100.0   14.2   96.4
- IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    4.5   97.3
- IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    1.5  100.0
- IOC/Service/Prototype/ConstructorInjection.pm  100.0    n/a    n/a  100.0    n/a    0.7  100.0
- IOC/Service/Prototype/SetterInjection.pm       100.0    n/a    n/a  100.0    n/a    0.7  100.0
+ IOC.pm                                         100.0    n/a    n/a  100.0    n/a    2.3  100.0
+ IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a   22.2  100.0
+ IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    6.9  100.0
+ IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.8   98.3
+ IOC/Proxy.pm                                   100.0   92.3   60.0  100.0  100.0    5.9   97.4
+ IOC/Proxy/Interfaces.pm                        100.0  100.0    n/a  100.0    n/a    0.9  100.0
+ IOC/Container.pm                               100.0   98.3   91.3  100.0  100.0   25.4   98.9
+ IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    0.7  100.0
+ IOC/Service.pm                                  89.4   78.6   66.7   88.5  100.0   13.5   85.7
+ IOC/Service/ConstructorInjection.pm            100.0  100.0   75.0  100.0  100.0    2.1   96.6
+ IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    5.9   97.4
+ IOC/Service/Literal.pm                         100.0  100.0   33.3  100.0  100.0    0.7   96.2
+ IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    0.8  100.0
+ IOC/Service/Prototype/ConstructorInjection.pm  100.0    n/a    n/a  100.0    n/a    0.4  100.0
+ IOC/Service/Prototype/SetterInjection.pm       100.0    n/a    n/a  100.0    n/a    0.4  100.0
  IOC/Visitor/SearchForContainer.pm              100.0  100.0   66.7  100.0  100.0    0.8   96.6
- IOC/Visitor/SearchForService.pm                100.0  100.0   66.7  100.0  100.0    0.7   96.8
- IOC/Visitor/ServiceLocator.pm                  100.0  100.0   66.7  100.0  100.0    2.1   97.0
+ IOC/Visitor/SearchForService.pm                100.0  100.0   66.7  100.0  100.0    0.9   96.8
+ IOC/Visitor/ServiceLocator.pm                  100.0  100.0   66.7  100.0  100.0    2.5   97.3
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                           98.8   95.2   73.9   98.4  100.0  100.0   96.6
+ Total                                           98.9   95.6   74.5   98.5  100.0  100.0   96.7
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
