@@ -4,7 +4,7 @@ package IOC::Container::MethodResolution;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 
@@ -14,10 +14,17 @@ our $AUTOLOAD;
 
 sub AUTOLOAD {
     my ($self) = @_;
-    my $service_name = (split '::', $AUTOLOAD)[-1];
-    (exists ${$self->{services}}{$service_name}) 
-        || throw IOC::ServiceNotFound "Service '$service_name' not found";
-    return $self->get($service_name);
+    my $name = (split '::', $AUTOLOAD)[-1];
+    if ($name eq 'root') {
+        return $self->findRootContainer();
+    }
+    elsif ($self->hasService($name)) {
+        return $self->get($name);
+    }
+    elsif ($self->hasSubContainer($name)) {
+        return $self->getSubContainer($name);
+    }
+    throw IOC::NotFound "Could not find either a service or a sub-container named '$name'";
 }
 
 1;
@@ -45,11 +52,56 @@ IOC::Container::MethodResolution - An IOC Container object which support method 
       return $app;
   }));
 
-  $container->application()->run();       
+  $container->application()->run();     
+  
+  # or a more complex example
+  # utilizing a tree-like structure
+  # of services
+
+  my $logging = IOC::Container->new('logging');
+  $logging->register(IOC::Service->new('logger' => sub {
+      my $c = shift;
+      return My::FileLogger->new($c->root()->filesystem()->filemanager()->openFile($c->log_file()));
+  }));
+  $logging->register(IOC::Service->new('log_file' => sub { '/var/my_app.log' })); 
+  
+  my $database = IOC::Container->new('database');
+  $database->register(IOC::Service->new('connection' => sub {
+      my $c = shift;
+      return My::DB->connect($c->dsn(), $c->username(), $c->password());
+  }));
+  $database->register(IOC::Service->new('dsn' => sub { 'dbi:mysql:my_app' }));
+  $database->register(IOC::Service->new('username' => sub { 'test' }));
+  $database->register(IOC::Service->new('password' => sub { 'secret_test' }));          
+  
+  my $file_system = IOC::Container->new('filesystem');
+  $file_system->register(IOC::Service->new('filemanager' => sub { return My::FileManager->new() })); 
+          
+  my $container = IOC::Container->new(); 
+  $container->addSubContainers($file_system, $database, $logging);
+  $container->register(IOC::Service->new('application' => sub {
+      my $c = shift; 
+      my $app = My::Application->new();
+      $app->logger($c->root()->logging()->logger());
+      $app->db_connection($c->root()->database()->connection());
+      return $app;
+  })); 
+  
+  $container->application()->run();          
 
 =head1 DESCRIPTION
 
 In this IOC framework, the IOC::Container::MethodResolution object holds instances of keyed IOC::Service objects which can be called as methods.
+
+            +----------------+
+            | IOC::Container |
+            +----------------+
+                    |
+                    ^
+                    |
+   +----------------------------------+
+   | IOC::Container::MethodResolution |
+   +----------------------------------+
 
 =head1 METHODS
 

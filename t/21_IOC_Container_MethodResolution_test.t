@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+use Test::More tests => 17;
 use Test::Exception;
 
 BEGIN { 
@@ -15,6 +15,7 @@ can_ok("IOC::Container::MethodResolution", 'new');
 
 my $container = IOC::Container::MethodResolution->new('MyMethodResolutionTest');
 isa_ok($container, 'IOC::Container::MethodResolution');
+isa_ok($container, 'IOC::Container');
 
 can_ok($container, 'register');
 $container->register(IOC::Service->new('log' => sub { 'Log' }));
@@ -31,4 +32,27 @@ is($value, 'Log', '... and the value is as we expected');
 
 throws_ok {
     $container->Fail();
-} "IOC::ServiceNotFound", '... the service must exists or we get an exception';
+} "IOC::NotFound", '... the service must exists or we get an exception';
+
+my $value2;
+lives_ok {
+    $value2 = $container->root()->log();
+} '... the method resolved correctly';
+
+is($value2, 'Log', '... and the value is as we expected');
+
+my $sub_container = IOC::Container::MethodResolution->new('sub');
+isa_ok($sub_container, 'IOC::Container::MethodResolution');
+isa_ok($sub_container, 'IOC::Container');
+
+$sub_container->register(IOC::Service->new('log' => sub { 'Log' }));
+
+$container->addSubContainer($sub_container);
+
+my $value3;
+lives_ok {
+    $value3 = $container->sub()->log();
+} '... the method resolved correctly';
+
+is($value3, 'Log', '... and the value is as we expected');
+

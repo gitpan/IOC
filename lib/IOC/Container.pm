@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -52,6 +52,14 @@ sub getParentContainer {
 sub isRootContainer {
     my ($self) = @_;
     return defined($self->{parent_container}) ? 0 : 1;
+}
+
+sub findRootContainer {
+    my ($self) = @_;
+    return $self if $self->isRootContainer();
+    my $current = $self;
+    $current = $current->getParentContainer() until $current->isRootContainer();
+    return $current;
 }
 
 # sub containers
@@ -237,6 +245,17 @@ IOC::Container - An IOC Container object
 
 In this IOC framework, the IOC::Container object holds instances of IOC::Service objects keyed by strings. It can also have sub-containers, which are instances of IOC::Container objects also keyed by string.
 
+ +------------------+                  +--------------+                 +-------------------------+
+ |  IOC::Container  |---(*services)--->| IOC::Service |---(instance)--->| <Your Component/Object> |
+ +------------------+                  +--------------+                 +-------------------------+
+           |
+   (*sub-containers)
+           | 
+           V    
+ +------------------+
+ |  IOC::Container  |
+ +------------------+  
+
 =head1 METHODS
 
 =over 4
@@ -296,6 +315,10 @@ Given a C<$container>, this will associate it as the invocant's parent. If the C
 =item B<isRootContainer>
 
 If the invocant does not have a parent, then it is considered a root container and this method will return true (C<1>), otherwise it will return false (C<0>).
+
+=item B<findRootContainer>
+
+This will climb back up the container hierarchy and find the root of the container tree.
 
 =back
 

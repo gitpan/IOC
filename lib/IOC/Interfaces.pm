@@ -4,19 +4,12 @@ package IOC::Interfaces;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use Class::Interfaces (
-        'IOC::Visitable'  => [ 'accept' ],
-        'IOC::Visitor'    => [ 'visit'  ],
-        
-#         'IOC::Observable' => [],
-#         'IOC::Observer'   => [],
-#         
-#         'IOC::Startable'  => [ 'start', 'stop' ],
-#         'IOC::Disposable' => [ 'dispose' ], 
+        'IOC::Visitable' => [ 'accept' ],
+        'IOC::Visitor'   => [ 'visit'  ],
         );
-
 
 1;
 
@@ -31,6 +24,8 @@ IOC::Interfaces - Interfaces for the IOC Framework
   use IOC::Interfaces;
 
 =head1 DESCRIPTION
+
+This module creates a couple of class interfaces which are used in other parts of the IOC framework.
 
 =head1 INTERFACES
 
@@ -59,6 +54,14 @@ None that I am aware of. Of course, if you find a bug, let me know, and I will b
 I use B<Devel::Cover> to test the code coverage of my tests, see the CODE COVERAGE section of L<IOC> for more information.
 
 =head1 SEE ALSO
+
+=over 4
+
+=item L<Class::Interfaces>
+
+The interfaces are generated inline by another module I wrote called L<Class::Interfaces>
+
+=back
 
 =head1 AUTHOR
 

@@ -4,7 +4,7 @@ package IOC::Service::SetterInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IOC::Exceptions;
 
@@ -24,7 +24,10 @@ sub _init {
     (defined($component_class) && defined($component_constructor))
         || throw IOC::InsufficientArguments "You must provide a class and a constructor method";
     (defined($setter_parameters) && ref($setter_parameters) eq 'ARRAY')
-        || throw IOC::InsufficientArguments "You must provide a set of setter parameters";         
+        || throw IOC::InsufficientArguments "You must provide a set of setter parameters";    
+    $self->{component_class} = $component_class;
+    $self->{component_constructor} = $component_constructor;
+    $self->{setter_parameters} = $setter_parameters;    
     $self->SUPER::_init(
         $name,
         sub {
@@ -81,6 +84,16 @@ IOC::Service::SetterInjection - An IOC Service object which uses Setter Injectio
 =head1 DESCRIPTION
 
 In this IOC framework, the IOC::Service::SetterInjection object holds instances of components to be managed.
+
+          +--------------+
+          | IOC::Service |
+          +--------------+
+                 |
+                 ^
+                 |
+   +-------------------------------+
+   | IOC::Service::SetterInjection |
+   +-------------------------------+
 
 =head1 METHODS
 

@@ -4,7 +4,7 @@ package IOC::Visitor::SearchForContainer;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -42,9 +42,6 @@ sub _recursiveSearch {
     # each time we do it, otherwise we are at the 
     # mercy of the hash ordering 
     foreach my $sub_container_name (sort $container->getSubContainerList()) {
-        # if it matches the name, then return it
-        return $container->getSubContainer($sub_container_name)
-            if $sub_container_name eq $container_to_find;
         # otherwise we need to search the next level
         my $sub_container = $container->getSubContainer($sub_container_name);
         $self->_recursiveSearch($sub_container, $container_to_find) 
@@ -69,13 +66,27 @@ IOC::Visitor::SearchForContainer - Visitor for searching a IOC::Container hierar
 
 This is a IOC::Visitor object used for searching a IOC::Container hierarchy
 
+          +------------------+
+          | <<IOC::Visitor>> |
+          +------------------+
+                    |
+                    ^
+                    |
+   +----------------------------------+
+   | IOC::Visitor::SearchForContainer |
+   +----------------------------------+
+
 =head1 METHODS
 
 =over 4
 
 =item B<new ($name)>
 
-=item B<visit ($registry)>
+Creates a new instance which will search for a Container at a given C<$name>. If no C<$name> is given, than an B<IOC::InsufficientArguments> exception is thrown. 
+
+=item B<visit ($container)>
+
+Given a C<$container>, the invocant will attempt to locate the container with the C<$name> (given to the constuctor) from within the C<$container>'s hierarchy.
 
 =back 
 

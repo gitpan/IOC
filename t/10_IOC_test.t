@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+use Test::More tests => 17;
 use Test::Exception;
 
 BEGIN { 
@@ -20,6 +20,10 @@ BEGIN {
     use_ok('IOC::Service');    
         use_ok('IOC::Service::ConstructorInjection'); 
         use_ok('IOC::Service::SetterInjection');     
+        
+        use_ok('IOC::Service::Prototype'); 
+            use_ok('IOC::Service::Prototype::ConstructorInjection'); 
+            use_ok('IOC::Service::Prototype::SetterInjection');     
     
     # IOC::Visitor     
         use_ok('IOC::Visitor::ServiceLocator');

@@ -4,9 +4,10 @@ package IOC::Exceptions;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Class::Throwable qw(
+        IOC::NotFound
         IOC::ServiceNotFound
         IOC::ServiceAlreadyExists
         IOC::ContainerNotFound
@@ -35,6 +36,8 @@ IOC::Exceptions - Exception objects for the IOC Framework
 
 =head1 DESCRIPTION
 
+This module creates a number of exception classes which are used in other parts of the IOC framework.
+
 =head1 EXCEPTIONS
 
 =over 4
@@ -46,6 +49,8 @@ IOC::Exceptions - Exception objects for the IOC Framework
 =item B<IOC::ContainerNotFound>
 
 =item B<IOC::ContainerAlreadyExists>
+
+=item B<IOC::NotFound>
 
 =item B<IOC::InsufficientArguments>
 
@@ -78,6 +83,14 @@ None that I am aware of. Of course, if you find a bug, let me know, and I will b
 I use B<Devel::Cover> to test the code coverage of my tests, see the CODE COVERAGE section of L<IOC> for more information.
 
 =head1 SEE ALSO
+
+=over 4
+
+=item L<Class::Throwable>
+
+The exceptions are generated inline and all inherit from by another module I wrote called L<Class::Throwable>
+
+=back
 
 =head1 AUTHOR
 

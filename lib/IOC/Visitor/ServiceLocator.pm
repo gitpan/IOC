@@ -4,7 +4,7 @@ package IOC::Visitor::ServiceLocator;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -32,9 +32,7 @@ sub visit {
     my $service_name = pop @path;
     if ($self->{path} =~ /^\//) {
         # start at the root
-        my $root = $container;
-        $root = $root->getParentContainer() until $root->isRootContainer(); 
-        my $current = $root;
+        my $current = $container->findRootContainer();
         $current = $current->getSubContainer(shift @path) while @path;
         $service = $current->get($service_name);
     }
@@ -83,13 +81,23 @@ IOC::Visitor::ServiceLocator - Service locator Visitor for the IOC::Container hi
 
 This is a IOC::Visitor object, used by the IOC::Container's C<find> method to locate a service using a path syntax.
 
+        +------------------+
+        | <<IOC::Visitor>> |
+        +------------------+
+                 |
+                 ^
+                 |
+   +------------------------------+
+   | IOC::Visitor::ServiceLocator |
+   +------------------------------+
+
 =head1 METHODS
 
 =over 4
 
 =item B<new ($path)>
 
-Creates a new instance which will find Services at a given C<$path>. If no C<$path> is given, than an B<IOC::InsufficientArguments> exceptionis thrown. 
+Creates a new instance which will find Services at a given C<$path>. If no C<$path> is given, than an B<IOC::InsufficientArguments> exception is thrown. 
 
 =item B<visit ($container)>
 

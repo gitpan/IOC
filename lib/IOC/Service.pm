@@ -4,7 +4,7 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use IOC::Exceptions;
 
@@ -102,6 +102,17 @@ IOC::Service - An IOC Service object
 
 In this IOC framework, the IOC::Service object holds instances of components to be managed.
 
+   +--------------+                 +-------------------------+
+   | IOC::Service |---(instance)--->| <Your Component/Object> |
+   +--------------+                 +-------------------------+ 
+          |
+  (parent_container)
+          |
+          V
+ +------------------+                  
+ |  IOC::Container  |
+ +------------------+
+
 =head1 METHODS
 
 =over 4
@@ -130,13 +141,9 @@ This method returns the component held by the service object, the is basically t
 
 =item Work on the documentation
 
-=item Allow for prototyped services as well as the current singleton style
+=item Add Interface Injection 
 
-I am still thinking about the best way to handle this.
-
-=item Create a InterfaceInjection service 
-
-This is the most complex of all the injection methods, and will require the most code. I have to read up on this technique a little more first.
+This is the most complex of all the injection methods, and will require the most code. I have to read up on this technique a little more first. However, I am not really convinced it is needed.
 
 =back
 

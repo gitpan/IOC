@@ -4,7 +4,7 @@ package IOC::Service::ConstructorInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IOC::Exceptions;
 
@@ -24,7 +24,10 @@ sub _init {
     (defined($component_class) && defined($component_constructor))
         || throw IOC::InsufficientArguments "You must provide a class and a constructor method";
     (defined($parameters) && ref($parameters) eq 'ARRAY')
-        || throw IOC::InsufficientArguments "You must provide a set of parameters for the constructor as an Array reference";     
+        || throw IOC::InsufficientArguments "You must provide a set of parameters for the constructor as an Array reference";
+    $self->{component_class} = $component_class;
+    $self->{component_constructor} = $component_constructor;
+    $self->{parameters} = $parameters;
     $self->SUPER::_init(
         $name,
         sub {
@@ -47,23 +50,29 @@ sub _init {
             (defined($constructor)) 
                 || throw IOC::ConstructorNotFound "The constructor '$component_constructor' could not be found for class '$component_class'";
             # now take care of the parameters
-            for (my $i = 0; $i < scalar @{$parameters}; $i++) {
+            # NOTE:
+            # we must be sure to copy this otherwise it
+            # will not work correctly with the prototype
+            # verisons, this has to do with the scope of
+            # this array, and how long it lives
+            my @parameters = @{$parameters};
+            for (my $i = 0; $i < scalar @parameters; $i++) {
                 # if the parameter is not been blessed
                 # into the pseudo-package ComponentParameter
                 # then we skip it, however ...
-                next unless UNIVERSAL::isa($parameters->[$i], "ComponentParameter");
+                next unless UNIVERSAL::isa($parameters[$i], "ComponentParameter");
                 # if it has been, then we derference it
                 # into the name of the service expected
                 # and use the IOC::Container to get an
                 # instance of that service and replace 
                 # that in the parameters array
-                $parameters->[$i] = $c->get(${$parameters->[$i]});
+                $parameters[$i] = $c->get(${$parameters[$i]});
             }                
             # now we have the class loaded, 
             # the constructor confirmed, and
             # the parameters realized, so we
             # can create the instance now
-            return $component_class->$constructor(@{$parameters});
+            return $component_class->$constructor(@parameters);
         }
         );
 }
@@ -102,6 +111,16 @@ IOC::Service::ConstructorInjection - An IOC Service object which uses Constructo
 =head1 DESCRIPTION
 
 In this IOC framework, the IOC::Service::ConstructorInjection object holds instances of components to be managed.
+
+             +--------------+
+             | IOC::Service |
+             +--------------+
+                    |
+                    ^
+                    |
+   +------------------------------------+
+   | IOC::Service::ConstructorInjection |
+   +------------------------------------+
 
 =head1 METHODS
 

@@ -1,5 +1,39 @@
 Revision history for Perl extension IOC.
 
+0.07 Thurs Oct 21 2004
+    > Improved documentation for all classes, however
+      I still have more to write
+
+    + added IOC::Service::Prototype
+    + added IOC::Service::Prototype::ConstructorInjection
+    + added IOC::Service::Prototype::SetterInjection 
+        - this allows services to dispense prototypes
+          rather then just singleton instances
+            ~ added tests for these new classes
+
+    * IOC::Exceptions
+        ~ added IOC::NotFound exception to handle
+          general cases
+
+    * IOC::Container
+        ~ added findRootContainer method
+          
+    * IOC::Container::MethodResolution
+        - now handles auto-finding of sub-containers
+          as well, and introduces a new pseduo-method
+          'root' which will allow you to go back to the
+          root of the container hierarchy.
+
+    * IOC::Service::ConstructorInjection
+        - fixed parameter handling so it works
+          with the Prototype:: classes 
+
+    * IOC::Visitor::ServiceLocator
+        - now uses findRootContainer method
+        
+    * IOC::Visitor::SearchForContainer
+        - removed redundant code (thanks Devel::Cover :)
+
 0.06 Tues Oct 19 2004
     << NOTE: Some API Changes >>
 

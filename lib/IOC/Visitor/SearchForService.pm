@@ -4,7 +4,7 @@ package IOC::Visitor::SearchForService;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -62,13 +62,27 @@ IOC::Visitor::SearchForService - Visitor for searching a IOC::Container hierarch
 
 This is a IOC::Visitor object used for searching a IOC::Container hierarchy.
 
+          +------------------+
+          | <<IOC::Visitor>> |
+          +------------------+
+                   |
+                   ^
+                   |
+   +--------------------------------+
+   | IOC::Visitor::SearchForService |
+   +--------------------------------+
+
 =head1 METHODS
 
 =over 4
 
 =item B<new ($name)>
 
-=item B<visit ($registry)>
+Creates a new instance which will search for a Service at a given C<$name>. If no C<$name> is given, than an B<IOC::InsufficientArguments> exception is thrown. 
+
+=item B<visit ($container)>
+
+Given a C<$container>, the invocant will attempt to locate the service with the C<$name> (given to the constuctor) from within the C<$container>'s hierarchy.
 
 =back 
 
