@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 use IOC::Exceptions;
 
@@ -320,19 +320,19 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.9   98.3
  IOC/Proxy.pm                                   100.0   91.7   81.8  100.0  100.0   14.7   97.4
  IOC/Proxy/Interfaces.pm                        100.0  100.0    n/a  100.0    n/a    1.0  100.0
- IOC/Container.pm                               100.0   98.1   94.3  100.0  100.0   21.0   99.0
+ IOC/Container.pm                               100.0   98.1   90.0  100.0  100.0   29.9   98.9
  IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.4  100.0
  IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   20.7   97.6
- IOC/Service/ConstructorInjection.pm            100.0  100.0   77.8  100.0  100.0    3.4   97.4
- IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    3.4   97.3
+ IOC/Service/ConstructorInjection.pm            100.0  100.0   75.0  100.0  100.0   14.2   96.4
+ IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    4.5   97.3
  IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    1.5  100.0
  IOC/Service/Prototype/ConstructorInjection.pm  100.0    n/a    n/a  100.0    n/a    0.7  100.0
  IOC/Service/Prototype/SetterInjection.pm       100.0    n/a    n/a  100.0    n/a    0.7  100.0
- IOC/Visitor/SearchForContainer.pm              100.0  100.0   77.8  100.0  100.0    1.5   96.6
- IOC/Visitor/SearchForService.pm                100.0  100.0   77.8  100.0  100.0    2.0   96.7
- IOC/Visitor/ServiceLocator.pm                  100.0  100.0   77.8  100.0  100.0    3.2   96.9
+ IOC/Visitor/SearchForContainer.pm              100.0  100.0   66.7  100.0  100.0    0.8   96.6
+ IOC/Visitor/SearchForService.pm                100.0  100.0   66.7  100.0  100.0    0.7   96.8
+ IOC/Visitor/ServiceLocator.pm                  100.0  100.0   66.7  100.0  100.0    2.1   97.0
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                          100.0   98.0   83.9  100.0  100.0  100.0   98.2
+ Total                                          100.0   98.0   76.8  100.0  100.0  100.0   98.1
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO

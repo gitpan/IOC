@@ -4,7 +4,9 @@ package IOC::Service::ConstructorInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Exceptions;
 
@@ -60,7 +62,7 @@ sub _init {
                 # if the parameter is not been blessed
                 # into the pseudo-package ComponentParameter
                 # then we skip it, however ...
-                next unless UNIVERSAL::isa($parameters[$i], "ComponentParameter");
+                next unless blessed($parameters[$i]) && $parameters[$i]->isa("ComponentParameter");
                 # if it has been, then we derference it
                 # into the name of the service expected
                 # and use the IOC::Container to get an

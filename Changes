@@ -1,5 +1,11 @@
 Revision history for Perl extension IOC.
 
+0.14 Thurs Nov 18 2004
+    > now using Scalar::Util::blessed() instead of 
+      the convoluted UNIVERSAL::isa() stuff. This 
+      change affects a number of packages.
+      - added Scalar::Util as a dependency
+
 0.13 Wed Nov 17 2004
     * IOC::Service::Prototype
         - removed any reference to the prototypical

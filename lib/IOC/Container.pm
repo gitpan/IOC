@@ -4,7 +4,9 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -41,7 +43,7 @@ sub name {
 
 sub setParentContainer {
     my ($self, $parent_container) = @_;
-    (defined($parent_container) && ref($parent_container) && UNIVERSAL::isa($parent_container, 'IOC::Container'))
+    (blessed($parent_container) && $parent_container->isa('IOC::Container'))
         || throw IOC::InsufficientArguments "You must provide an IOC::Container object as a parent container";    
     $self->{parent_container} = $parent_container;
 }
@@ -68,7 +70,7 @@ sub findRootContainer {
 
 sub addSubContainer {
     my ($self, $container) = @_;
-    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+    (blessed($container) && $container->isa('IOC::Container'))
         || throw IOC::InsufficientArguments "You must provide an IOC::Container object as a sub-container";
     my $name = $container->name();
     (!exists ${$self->{sub_containers}}{$name}) 
@@ -116,7 +118,7 @@ sub getAllSubContainers {
 
 sub accept {
     my ($self, $visitor) = @_;
-    (defined($visitor) && ref($visitor) && UNIVERSAL::isa($visitor, 'IOC::Visitor'))
+    (blessed($visitor) && $visitor->isa('IOC::Visitor'))
         || throw IOC::InsufficientArguments "You must pass an IOC::Visitor object to the visit method";
     return $visitor->visit($self);
 }
@@ -125,7 +127,7 @@ sub accept {
 
 sub register {
     my ($self, $service) = @_;
-    (defined($service) && ref($service) && UNIVERSAL::isa($service, 'IOC::Service'))
+    (blessed($service) && $service->isa('IOC::Service'))
         || throw IOC::InsufficientArguments "You must provide a valid IOC::Service object to register";
     my $name = $service->name();
     (!exists ${$self->{services}}{$name}) 
@@ -156,7 +158,7 @@ sub registerWithProxy {
 sub addProxy {
     my ($self, $name, $proxy) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a valid service name";    
-    (defined($proxy) && ref($proxy) && UNIVERSAL::isa($proxy, 'IOC::Proxy'))
+    (blessed($proxy) && $proxy->isa('IOC::Proxy'))
         || throw IOC::InsufficientArguments "You must provide a valid IOC::Proxy object to register";    
     (exists ${$self->{services}}{$name}) 
         || throw IOC::ServiceNotFound "Unknown Service '${name}'";    

@@ -4,7 +4,9 @@ package IOC::Visitor::ServiceLocator;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -25,7 +27,7 @@ sub new {
 
 sub visit {
     my ($self, $container) = @_;
-    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+    (blessed($container) && $container->isa('IOC::Container'))
         || throw IOC::InsufficientArguments "You must provide an IOC::Container object as a sub-container";
     my $service;
     my @path = grep { $_ } split /\// => $self->{path};

@@ -4,7 +4,9 @@ package IOC::Proxy;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Exceptions;
 
@@ -24,7 +26,7 @@ sub _init {
 
 sub wrap {
     my ($self, $obj) = @_;
-    (defined($obj) && ref($obj) && UNIVERSAL::isa($obj, 'UNIVERSAL')) 
+    (blessed($obj)) 
         || throw IOC::InsufficientArguments "You can only wrap other objects";
     my $obj_class = $self->_getObjectClass($obj);
 

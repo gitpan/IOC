@@ -4,7 +4,9 @@ package IOC::Registry;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Exceptions;
 use IOC::Interfaces;
@@ -29,7 +31,7 @@ sub new {
 
 sub registerContainer {
     my ($self, $container) = @_;
-    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+    (blessed($container) && $container->isa('IOC::Container'))
         || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
     my $name = $container->name();
     (!exists ${$self->{containers}}{$name})
@@ -42,7 +44,7 @@ sub unregisterContainer {
     (defined($container_or_name)) || throw IOC::InsufficientArguments "You must supply a name or a container";    
     my $name;
     if (ref($container_or_name)) {
-        (UNIVERSAL::isa($container_or_name, 'IOC::Container'))
+        (blessed($container_or_name) && $container_or_name->isa('IOC::Container'))
             || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
         $name = $container_or_name->name();
     }

@@ -5,6 +5,7 @@ WriteMakefile(
     PREREQ_PM    => {
         'Test::More'        => 0.47,
         'Test::Exception'   => 0.15,
+        'Scalar::Util'      => 1.10,
         'Class::Throwable'       => 0.04,
         'Class::Interfaces'      => 0.01,
         'Class::StrongSingleton' => 0.01

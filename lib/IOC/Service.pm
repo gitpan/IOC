@@ -4,7 +4,9 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Exceptions;
 
@@ -38,7 +40,7 @@ sub name {
 
 sub setContainer {
     my ($self, $container) = @_;
-    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+    (blessed($container) && $container->isa('IOC::Container'))
         || throw IOC::InsufficientArguments "container argument is incorrect";
     $self->{container} = $container;
     $self;

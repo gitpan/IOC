@@ -4,7 +4,9 @@ package IOC::Visitor::SearchForContainer;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
+
+use Scalar::Util qw(blessed);
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -25,7 +27,7 @@ sub new {
 
 sub visit {
     my ($self, $container) = @_;
-    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+    (blessed($container) && $container->isa('IOC::Container'))
         || throw IOC::InsufficientArguments "You must provide an IOC::Container object to search";
     my $container_to_find = $self->{container_to_find};
     return $self->_recursiveSearch($container, $container_to_find);
