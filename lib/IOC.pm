@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 
@@ -66,7 +66,7 @@ A similar style of component management is the Service Locator, in which a globa
 
 With Inversion of Control, you configure a set of individual Service objects, which know how to initialize their particular components. If these components have dependencies, the will resolve them through the IOC framework itself. This results in a loosly coupled configuration which places no expectation upon initialization order. If your dependency requirements change, you need only adjust your Service's initialization routine, the ordering will adapt on it's own.
 
-Now, if you are confused by my description above, then I suggest going to this L<page|http://onestepback.org/index.cgi/Tech/Ruby/DependencyInjectionInRuby.rdoc> and reading the description there. This author does a much better job than I could ever hope to in explaining Inversion of Control (or as he calls it Dependency Injection). It should also be noted that the code and IoC techniques in this module were taken largely from this article. For more links and information on this topic, see the L<SEE ALSO> section.
+Now, if you are confused by my description above, then I suggest going to this page (L<http://onestepback.org/index.cgi/Tech/Ruby/DependencyInjectionInRuby.rdoc>) and reading the description there. This author does a much better job than I could ever hope to in explaining Inversion of Control (or as he calls it Dependency Injection). It should also be noted that the code and IoC techniques in this module were taken largely from this article. For more links and information on this topic, see the L<SEE ALSO> section.
 
 =head1 TO DO
 
@@ -86,20 +86,21 @@ None that I am aware of. Of course, if you find a bug, let me know, and I will b
 
 I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Devel::Cover> report on this module test suite.
 
- ------------------------ ------ ------ ------ ------ ------ ------ ------
- File                       stmt branch   cond    sub    pod   time  total
- ------------------------ ------ ------ ------ ------ ------ ------ ------
- IOC.pm                    100.0    n/a    n/a  100.0    n/a   28.4  100.0
- IOC/Container.pm          100.0  100.0   72.7  100.0  100.0   19.8   94.9
- IOC/Exceptions.pm         100.0    n/a    n/a  100.0    n/a   17.0  100.0
- IOC/Service.pm            100.0   91.7   83.3  100.0  100.0   34.8   95.7
- ------------------------ ------ ------ ------ ------ ------ ------ ------
- Total                     100.0   95.0   78.3  100.0  100.0  100.0   96.2
- ------------------------ ------ ------ ------ ------ ------ ------ ------
+ ----------------------------------- ------ ------ ------ ------ ------ ------ ------
+ File                                  stmt branch   cond    sub    pod   time  total
+ ----------------------------------- ------ ------ ------ ------ ------ ------ ------
+ IOC.pm                               100.0    n/a    n/a  100.0    n/a    9.6  100.0
+ IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a   11.5  100.0
+ IOC/Container.pm                     100.0   90.0   81.8  100.0  100.0   15.7   96.0
+ IOC/Container/MethodResolution.pm    100.0  100.0    n/a  100.0    n/a    3.7  100.0
+ IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   39.2   97.5
+ IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    9.7   97.3
+ IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0   10.5   97.2
+ ----------------------------------- ------ ------ ------ ------ ------ ------ ------
+ Total                                100.0   98.1   80.5  100.0  100.0  100.0   97.5
+ ----------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
-
-Apparently at some time there was an IOC::Lite on CPAN, but the author seems to have removed it and withdrawn support for it. I have emailed the author for more information.
 
 Some IoC Article links
 

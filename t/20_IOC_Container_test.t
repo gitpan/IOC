@@ -61,7 +61,7 @@ throws_ok {
 
 throws_ok {
     $container->get('Fail')
-} "IOC::MissingServiceException", '... cannot get without a service that does not exist';
+} "IOC::ServiceNotFound", '... cannot get without a service that does not exist';
 
 my $fetched_service;
 
@@ -72,3 +72,9 @@ lives_ok {
 ok(defined($fetched_service), '... we got a fetched service');
 is($fetched_service, 'Logger', '... and it is the service instance we expected');
 
+is_deeply(
+        [ $container->getServiceList() ],
+        [ 'logger' ],
+        '... these are the services we have');
+
+$container->DESTROY();

@@ -5,9 +5,13 @@ README
 lib/IOC.pm
 lib/IOC/Exceptions.pm
 lib/IOC/Container.pm
+lib/IOC/Container/MethodResolution.pm
 lib/IOC/Service.pm
+lib/IOC/Service/ConstructorInjection.pm
 t/10_IOC_test.t
 t/20_IOC_Container_test.t
+t/21_IOC_Container_MethodResolution_test.t
 t/30_IOC_Service_test.t
+t/31_IOC_Service_ConstructorInjection_test.t
 t/pod.t
 t/pod_coverage.t

@@ -43,7 +43,7 @@ sub get {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";    
     (exists ${$self->{services}}{$name}) 
-        || throw IOC::MissingServiceException "Unknown Service '${name}'";
+        || throw IOC::ServiceNotFound "Unknown Service '${name}'";
     $self->{services}->{$name}->instance();
 }
 
@@ -120,7 +120,7 @@ If the name of C<$service> already exists, then a B<IOC::DuplicateServiceExcepti
 
 Given a C<$name> this will return the service instance that name corresponds to, if C<$name> is not defined, an exception is thrown.
 
-If there is no service by that C<$name>, then a B<IOC::MissingServiceException> exception is thrown.
+If there is no service by that C<$name>, then a B<IOC::ServiceNotFound> exception is thrown.
 
 =item B<getServiceList>
 
@@ -129,14 +129,6 @@ Returns a list of all the named services available.
 =back
 
 =head1 TO DO
-
-=over 4
-
-=item Allow the option to use method names for finding services
-
-Basically this will utilize AUTOLOAD to allow service names to be called as methods instead of string arguments to C<get>. The preliminary package name is: IOC::Container::MethodResolution
-
-=back
 
 =head1 BUGS
 

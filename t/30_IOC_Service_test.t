@@ -94,6 +94,11 @@ lives_ok {
 my $logger = $service->instance('logger');
 isa_ok($logger, 'Logger');
 
+my $logger2 = $service->instance('logger');
+isa_ok($logger2, 'Logger');
+
+is($logger, $logger2, '... each logger instance is the same');
+
 # check init error in instance
 
 throws_ok {

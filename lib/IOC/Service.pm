@@ -4,7 +4,7 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 
@@ -28,7 +28,8 @@ sub _init {
     $self->{name} = $name;
     $self->{block} = $block;
     # container is optional
-    $self->{container} = $container;
+    $self->{container} = undef;    
+    $container->register($self) if $container;
 }
 
 sub name {
@@ -127,9 +128,9 @@ This method returns the component held by the service object, the is basically t
 
 =over 4
 
-=item Create subclasses of IOC::Service for specialized behavior
+=item Create a InterfaceInjection service 
 
-The idea is to allow different types of injection by using different IOC::Service subclasses, such as; IOC::Service::ConstructorInjection, IOC::Service::SetterInjection, IOC::Service::InterfaceInjection. 
+This is the most complex of all the injection methods, and will require the most code. I have to read up on this technique a little more first.
 
 =item Allow a containerless IOC::Service 
 
