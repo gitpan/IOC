@@ -1,3 +1,4 @@
+use 5.006; # means 5.6 basically
 use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME         => 'IOC',

@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.09';
+our $VERSION = '0.10';
 
 use Scalar::Util qw(blessed);
 
@@ -172,7 +172,7 @@ sub get {
     (exists ${$self->{services}}{$name}) 
         || throw IOC::ServiceNotFound "Unknown Service '${name}'";  
     if ($self->_isServiceLocked($name)) {
-        return IOC::Service::Deferred->create($name, $self->{services}->{$name});
+        return $self->{services}->{$name}->deferred();
     }
     $self->_lockService($name);   
     my $instance = $self->{services}->{$name}->instance();

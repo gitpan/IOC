@@ -1,5 +1,17 @@
 Revision history for Perl extension IOC.
 
+0.16 Fri Nov 26 2004
+    * IOC::Service
+        - added the deferred() method, which will
+          return an IOC::Service::Deferred wrapper
+          around the given service instance. 
+
+    * IOC::Container
+        - removed the direct reference to the 
+          IOC::Service::Deferred class, and it
+          now calls the deferred() method on 
+          the IOC::Service instance itself.
+
 0.15 Sat Nov 20 2004
     * IOC::Container
         - adjusted how cyclical dependencies are

@@ -4,7 +4,7 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 use Scalar::Util qw(blessed);
 
@@ -65,6 +65,11 @@ sub instance {
     return $self->{_instance};
 }
 
+sub deferred {
+    my ($self) = @_;
+    return IOC::Service::Deferred->new($self);
+}
+
 sub DESTROY {
     my ($self) = @_;
     # remove the connnection to the instance
@@ -85,7 +90,7 @@ package IOC::Service::Deferred;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use overload '%{}' => sub { 
                     return $_[0] if (caller)[0] eq 'IOC::Service::Deferred';
@@ -106,11 +111,10 @@ use overload '%{}' => sub {
 
 use Scalar::Util qw(blessed);
 
-sub create {
-    my ($class, $name, $service) = @_;
+sub new {
+    my ($class, $service) = @_;
     (blessed($service) && $service->isa('IOC::Service')) 
         || throw IOC::InsufficientArguments "You can only defer an IOC::Service object";
-    #print ">>>> $name -> deferred -> $service\n";
     return bless { service => $service }, $class;
 }
 
@@ -129,7 +133,7 @@ sub DESTROY { (shift)->{service} = undef }
 sub AUTOLOAD {
     my ($subname) = our $AUTOLOAD =~ /([^:]+)$/;
     $_[0] = $_[0]->{service}->instance();
-    my $func = $_[0]->can( $subname );
+    my $func = $_[0]->can($subname);
     (ref($func) eq 'CODE') 
         || throw IOC::MethodNotFound "You cannot call '$subname'";
     goto &$func;
@@ -200,6 +204,10 @@ This will break the connection between a service and a container. This method is
 =item B<instance>
 
 This method returns the component held by the service object, the is basically the value returned by the C<$block> constructor argument.
+
+=item B<deferred>
+
+This method returns an IOC::Service::Deferred wrapper which will lazy load the service. This is used for handling circular dependencies, and rarely used directly.
 
 =back
 

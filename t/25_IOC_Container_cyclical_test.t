@@ -255,15 +255,15 @@ BEGIN {
 
 {
     throws_ok {
-        IOC::Service::Deferred->create();
+        IOC::Service::Deferred->new();
     } 'IOC::InsufficientArguments', '... got the error we expected';
 
     throws_ok {
-        IOC::Service::Deferred->create([]);
+        IOC::Service::Deferred->new([]);
     } 'IOC::InsufficientArguments', '... got the error we expected';
     
     throws_ok {
-        IOC::Service::Deferred->create(bless({}, 'Fail'));
+        IOC::Service::Deferred->new(bless({}, 'Fail'));
     } 'IOC::InsufficientArguments', '... got the error we expected';
     
 } 
