@@ -60,13 +60,13 @@ IOC::Visitor::SearchForService - Visitor for searching a IOC::Container hierarch
 
 =head1 DESCRIPTION
 
-This is a IOC::Visitor object used for searching a IOC::Container hierarchy
+This is a IOC::Visitor object used for searching a IOC::Container hierarchy.
 
 =head1 METHODS
 
 =over 4
 
-=item B<new ($path)>
+=item B<new ($name)>
 
 =item B<visit ($registry)>
 

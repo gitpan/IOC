@@ -4,12 +4,13 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use IOC::Exceptions;
 
 use IOC::Container;
 use IOC::Service;
+use IOC::Registry;
 
 1;
 
@@ -42,7 +43,11 @@ IOC - A lightweight IOC (Inversion of Control) framework
 
 This module provide a lightweight IOC or Inversion of Control framework. Inversion of Control, sometimes called Dependency Injection, is a component management style which aims to clean up component configuration and provide a cleaner, more flexible means of configuring a large application.
 
-A similar style of component management is the Service Locator, in which a global Service Locator object holds instances of components which can be retrieved by key. The common style is to create and configure each component instance and add it into the Service Locator. The main drawback to this approach is the aligning of the dependencies of each component prior to inserting the component into the Service Locator. If your dependency requirements change, then your initialization code must change to accomidate. This can get quite complex when you need to re-arrange initialization ordering and such. The Inversion of Control style alleviates this problem by taking a different approach.
+=head2 What is Inversion of Control
+
+My favorite 10 second description of Inversion of Control is, "Inversion of Control is the inverse of Garbage Collection". This comes from Howard Lewis Ship, the creator of the HiveMind IoC Java framework. His point is that the way garbage collection takes care of the destruction of your objects, Inversion of Control takes care of the creation of your objects. However, this does not really explain why IoC is useful, for that you will have to read on.
+
+You may be familiar with a similar style of component management called a Service Locator, in which a global Service Locator object holds instances of components which can be retrieved by key. The common style is to create and configure each component instance and add it into the Service Locator. The main drawback to this approach is the aligning of the dependencies of each component prior to inserting the component into the Service Locator. If your dependency requirements change, then your initialization code must change to accomidate. This can get quite complex when you need to re-arrange initialization ordering and such. The Inversion of Control style alleviates this problem by taking a different approach.
 
 With Inversion of Control, you configure a set of individual Service objects, which know how to initialize their particular components. If these components have dependencies, the will resolve them through the IOC framework itself. This results in a loosly coupled configuration which places no expectation upon initialization order. If your dependency requirements change, you need only adjust your Service's initialization routine, the ordering will adapt on it's own.
 
@@ -82,7 +87,53 @@ Here is a quick class relationship diagram, to help illustrate how the peices of
  +------------------+
  |  IOC::Container  |
  +------------------+   
-       
+ 
+I am not very good at UML Sequence diagrams, but here are a few examples of ones I have made.  
+ 
+Calling C<get> on an instance of IOC::Container.
+ 
+   MyObject         IOC::Container                IOC::Service
+      |                   |                             |
+     +-+                  |                             |
+     | | get($name)      +-+                            |
+     | |---------------->| |                            |
+     | |                 | | instance()                +-+               
+     | |                 | |-------------------------->| |
+     | |                 | |                           | |
+     | |                 | |        <service instance> | |        
+     | |<----------------| |<--------------------------| | 
+     +-+                 +-+                           +-+
+      |                   |                             |    
+      |                   |                             |
+
+Calling C<find> on an instance of IOC::Container.
+
+   MyObject         IOC::Container          IOC::Visitor::ServiceLocator
+      |                   |                             |
+     +-+                  |                             |
+     | | find($path)     +-+                            |
+     | |---------------->| |                            |
+     | |                 | | new($path)                +-+               
+     | |                 | |-------------------------->| |
+     | |                 | |                           | |
+     | |                 | |                <$visitor> | |        
+     | |                 | |<--------------------------| |
+     | |                 | |                           | |
+     | |                 | | accept($visitor)          | |
+     | |                 | |------------------+        | |
+     | |                 | |                  |        | |      
+     | |                 |+-+<----------------+        | |
+     | |                 || |                          | |
+     | |                 || | visit ($self)            | |      
+     | |                 || |------------------------->| |
+     | |                 || |                          | |
+     | |                 || |       <service instance> | | 
+     | |<----------------|| |<-------------------------| |   
+     | |                 |+-+                          | |
+     +-+                 +-+                           +-+
+      |                   |                             |    
+      |                   |                             |
+          
 =head1 TO DO   
 
 =over 4
@@ -102,20 +153,20 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
  File                                  stmt branch   cond    sub    pod   time  total
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
- IOC.pm                               100.0    n/a    n/a  100.0    n/a    4.0  100.0
- IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a    6.6  100.0
- IOC/Interfaces.pm                    100.0    n/a    n/a  100.0    n/a    6.3  100.0
- IOC/Registry.pm                      100.0  100.0   77.8  100.0  100.0   14.5   97.6
- IOC/Container.pm                     100.0   97.4   93.1  100.0  100.0   33.8   98.6
+ IOC.pm                               100.0    n/a    n/a  100.0    n/a    4.9  100.0
+ IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a    5.5  100.0
+ IOC/Interfaces.pm                    100.0    n/a    n/a  100.0    n/a    6.0  100.0
+ IOC/Registry.pm                      100.0   97.4   77.8  100.0  100.0   12.5   98.3
+ IOC/Container.pm                     100.0   97.4   93.1  100.0  100.0   34.8   98.6
  IOC/Container/MethodResolution.pm    100.0  100.0    n/a  100.0    n/a    1.4  100.0
- IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   15.3   97.5
- IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    4.4   97.3
- IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0    4.5   97.2
- IOC/Visitor/SearchForContainer.pm    100.0   90.0   77.8  100.0  100.0    2.8   95.1
- IOC/Visitor/SearchForService.pm      100.0  100.0   77.8  100.0  100.0    2.9   96.7
- IOC/Visitor/ServiceLocator.pm        100.0  100.0   77.8  100.0  100.0    3.5   97.0
+ IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   14.0   97.4
+ IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    3.9   97.3
+ IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0    4.1   97.2
+ IOC/Visitor/SearchForContainer.pm    100.0   90.0   77.8  100.0  100.0    2.5   95.1
+ IOC/Visitor/SearchForService.pm      100.0  100.0   77.8  100.0  100.0    4.0   96.7
+ IOC/Visitor/ServiceLocator.pm        100.0  100.0   77.8  100.0  100.0    6.4   97.0
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                100.0   98.4   83.2  100.0  100.0  100.0   97.7
+ Total                                100.0   97.9   83.2  100.0  100.0  100.0   97.8
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO

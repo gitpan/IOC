@@ -73,7 +73,7 @@ This is a IOC::Visitor object used for searching a IOC::Container hierarchy
 
 =over 4
 
-=item B<new ($path)>
+=item B<new ($name)>
 
 =item B<visit ($registry)>
 

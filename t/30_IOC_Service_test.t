@@ -102,5 +102,5 @@ is($logger, $logger2, '... each logger instance is the same');
 # check init error in instance
 
 throws_ok {
-    IOC::Service->new('Fail' => sub { undef }, $container)->instance();
+    IOC::Service->new('Fail' => sub { undef })->setContainer($container)->instance();
 } "IOC::InitializationError", '... got the correct initilization error';

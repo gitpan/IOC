@@ -9,6 +9,8 @@ our $VERSION = '0.03';
 use IOC::Interfaces;
 use IOC::Exceptions;
 
+use IOC::Visitor::ServiceLocator;
+
 use base 'IOC::Visitable';
 
 sub new {
@@ -134,7 +136,6 @@ sub get {
 sub find {
     my ($self, $path) = @_;
     (defined($path)) || throw IOC::InsufficientArguments "You must provide a path of find a service";
-    require IOC::Visitor::ServiceLocator;
     return $self->accept(IOC::Visitor::ServiceLocator->new($path));    
 }
 

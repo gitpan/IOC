@@ -74,9 +74,9 @@ throws_ok {
 } "IOC::InsufficientArguments", '... cannot create a constructor injection without an array ref as parameter list';
 
 throws_ok {
-    IOC::Service::ConstructorInjection->new('file2' => ("Fail", 'new', []), $container)->instance;
+    IOC::Service::ConstructorInjection->new('file2' => ("Fail", 'new', []))->setContainer($container)->instance;
 } "IOC::ClassLoadingError", '... cannot create a constructor injection without real class';
 
 throws_ok {
-    IOC::Service::ConstructorInjection->new('file3' => ("File", 'noNew', []), $container)->instance;
+    IOC::Service::ConstructorInjection->new('file3' => ("File", 'noNew', []))->setContainer($container)->instance;
 } "IOC::ConstructorNotFound", '... cannot create a constructor injection without a proper class constructor name';

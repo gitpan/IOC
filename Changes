@@ -1,5 +1,29 @@
 Revision history for Perl extension IOC.
 
+0.06 Tues Oct 19 2004
+    << NOTE: Some API Changes >>
+
+    * IOC::Registry
+        - changed names of methods, anything with 
+          the word 'Root' in it has now been changed
+          to 'Registered'.
+        - added unregisterContainer method
+        - added locateService method
+        - added locateContainer method
+        - added getRegisteredContainerList method
+        - added hasRegisteredContainer method
+        - added DESTORY method
+            ~ added tests and documentation for all new methods
+        
+    * IOC::Service
+        ~ removed optional $container argument to constructor
+        
+    * IOC::Service::ConstructorInjection
+        ~ removed optional $container argument to constructor
+        
+    * IOC::Service::SetterInjection
+        ~ removed optional $container argument to constructor 
+
 0.05 Tues Oct 19 2004
     + added IOC::Registry
         ~ created dependency with Class::StrongSingleton

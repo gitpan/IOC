@@ -4,7 +4,7 @@ package IOC::Registry;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 use IOC::Interfaces;
@@ -25,13 +25,92 @@ sub new {
     return $registry;
 }
 
-sub getRootContainer {
+# add and remove containers
+
+sub registerContainer {
+    my ($self, $container) = @_;
+    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
+        || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
+    my $name = $container->name();
+    (!exists ${$self->{containers}}{$name})
+        || throw IOC::ContainerAlreadyExists "Duplicate Container '$name'";
+    $self->{containers}->{$name} = $container;
+}
+
+sub unregisterContainer {
+    my ($self, $container_or_name) = @_;
+    (defined($container_or_name)) || throw IOC::InsufficientArguments "You must supply a name or a container";    
+    my $name;
+    if (ref($container_or_name)) {
+        (UNIVERSAL::isa($container_or_name, 'IOC::Container'))
+            || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
+        $name = $container_or_name->name();
+    }
+    else {
+        $name = $container_or_name;
+    }
+    (exists ${$self->{containers}}{$name})
+        || throw IOC::ContainerNotFound "Cannot unregister a container we do not have";
+    my $container = $self->{containers}->{$name};
+    delete $self->{containers}->{$name};    
+    return $container;
+}
+
+# fetching the containers
+
+sub getRegisteredContainer {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must supply a name of a container";
     (exists ${$self->{containers}}{$name}) 
         || throw IOC::ContainerNotFound "There is no container by the name '${name}'";     
     return $self->{containers}->{$name};
 }
+
+sub getRegisteredContainerList {
+    my ($self) = @_;
+    return keys %{$self->{containers}};
+}
+
+sub hasRegisteredContainer {
+    my ($self, $name) = @_;
+    (defined($name)) || throw IOC::InsufficientArguments "You must supply a name of a container";
+    return (exists ${$self->{containers}}{$name}) ? 1 : 0;
+}
+
+# locate Service by path
+
+sub locateService {
+    my ($self, $path) = @_;
+    (defined($path)) || throw IOC::InsufficientArguments "You must supply a path to a service";
+    my @path = grep { $_ } split /\// => $path;
+    my $registered_container_name = shift @path;
+    (exists ${$self->{containers}}{$registered_container_name}) 
+        || throw IOC::ContainerNotFound "There is no registered container found at '$registered_container_name' for the path '${path}'"; 
+    my $service;
+    eval {
+        $service = $self->{containers}->{$registered_container_name}->find(join "/" => @path);
+    };
+    throw IOC::ServiceNotFound "There is no service found at the path '${path}'" => $@ if $@;    
+    return $service;
+}
+
+sub locateContainer {
+    my ($self, $path) = @_;
+    (defined($path)) || throw IOC::InsufficientArguments "You must supply a path to a container";    
+    my @path = grep { $_ } split /\// => $path;
+    my $registered_container_name = shift @path;
+    (exists ${$self->{containers}}{$registered_container_name}) 
+        || throw IOC::ContainerNotFound "There is no container found at the path '${path}'"; 
+    my $current = $self->{containers}->{$registered_container_name};
+    eval {
+        $current = $current->getSubContainer(shift @path) while @path;
+    };
+    throw IOC::ContainerNotFound "There is no container found at the path '${path}'" => $@ if $@;
+    # otherwise ...
+    return $current;
+}
+
+# searching for containers
 
 sub searchForContainer {
     my ($self, $container_to_find) = @_;
@@ -53,14 +132,14 @@ sub searchForService {
     return $service;
 }
 
-sub registerContainer {
-    my ($self, $container) = @_;
-    (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
-        || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
-    my $name = $container->name();
-    (!exists ${$self->{containers}}{$name})
-        || throw IOC::ContainerAlreadyExists "Duplicate Container '$name'";
-    $self->{containers}->{$name} = $container;
+sub DESTROY {
+    my ($self) = @_;
+    # get rid of all our containers
+    foreach my $container (values %{$self->{containers}}) {
+        defined $container && $container->DESTROY;
+    }     
+    # let the Singleton do its work
+    $self->SUPER::DESTROY();
 }
 
 1;
@@ -89,9 +168,15 @@ IOC::Registry - Registry singleton for the IOC Framework
   my $reg = IOC::Registry->instance(); # get the singleton
   
   # and try and find a service
-  my $service = $reg->searchForService('laundry') || die "Could not find the logger service";
+  my $service = $reg->searchForService('laundry') || die "Could not find the laundry service";
   
-  my $database = $reg->getRootContainer('database');
+  my $database = $reg->getRegisteredContainer('database');
+  
+  # get a list of container names
+  my @container_names = $reg->getRegisteredContainerList();
+  
+  # and you can unregister containers too
+  my $unregistered_container = $reg->unregisterContainer($container);
 
 =head1 DESCRIPTION
 
@@ -105,13 +190,53 @@ This is a singleton object which is meant to be used as a global registry for al
 
 Creates a new singleton instance of the Registry, the same singleton will be returned each time C<new> is called after the first one. 
 
+=back
+
+=head2 Container Registration Methods
+
+=over 4
+
 =item B<registerContainer ($container)>
 
-=item B<getRootContainer ($name)>
+This method will add a C<$container> to the registry, where it can be accessed by it's name.
+
+=item B<unregisterContainer ($container|$name)>
+
+This method accepts either the C<$container> instance itself, or the C<$name> of the container and removes said container from the registry.
+
+=item B<hasRegisteredContainer ($name)>
+
+This will return true (C<1>) if a container by that C<$name> exists within the registry, and false (C<0>) otherwise.
+
+=item B<getRegisteredContainer ($name)>
+
+This will retrieve a registered container by C<$name> from the registry. If C<$name> is not defined, then an B<IOC::InsufficientArguments> exception will be thrown. If no container is found with C<$name>, then an B<IOC::ContainerNotFound> exception will be thrown.
+
+=item B<getRegisteredContainerList>
+
+This will return the list of string names of all the registered containers.
+
+=back
+
+=head2 Search Methods
+
+=over 4
+
+=item B<locateService ($path)>
+
+Given a C<$path> to a service, this will locate the service and return it. If C<$path> is not specificed an B<IOC::InsufficientArguments> exception will be thrown.
+
+=item B<searchForService ($name)>
+
+Given a C<$name> for a service, this will attempt to locate the service within the entire heirarchy and return it. If the service is not found, then this method will return C<undef>. If C<$name> is not specificed an B<IOC::InsufficientArguments> exception will be thrown.
+
+=item B<locateContainer ($path)>
+
+Given a C<$path> to a container, this will locate the container and return it. If C<$path> is not specificed an B<IOC::InsufficientArguments> exception will be thrown.
 
 =item B<searchForContainer ($name)>
 
-=item B<searchForService ($name)>
+Given a C<$name> for a container, this will attempt to locate the container within the entire heirarchy and return it. If the container is not found, then this method will return C<undef>. If C<$name> is not specificed an B<IOC::InsufficientArguments> exception will be thrown.
 
 =back
 

@@ -41,9 +41,11 @@ my $service = IOC::Service::SetterInjection->new('logger' =>
                                         ('Logger', 'new', [
                                             { setLogFileHandle => 'log_file_handle' },
                                             { setLogFileFormat => 'log_file_format' }
-                                        ]), $container);
+                                        ]));
 isa_ok($service, 'IOC::Service::SetterInjection');
 isa_ok($service, 'IOC::Service');
+
+$service->setContainer($container);
                               
 can_ok($service, 'instance');                                                  
 
@@ -73,13 +75,13 @@ throws_ok {
 } "IOC::InsufficientArguments", '... cannot create a setter injection without an array ref as setter parameter list';
 
 throws_ok {
-    IOC::Service::SetterInjection->new('file2' => ("Fail", 'new', []), $container)->instance;
+    IOC::Service::SetterInjection->new('file2' => ("Fail", 'new', []))->setContainer($container)->instance;
 } "IOC::ClassLoadingError", '... cannot create a setter injection with a bad object';
 
 throws_ok {
-    IOC::Service::SetterInjection->new('file3' => ("Logger", 'notNew', []), $container)->instance;
+    IOC::Service::SetterInjection->new('file3' => ("Logger", 'notNew', []))->setContainer($container)->instance;
 } "IOC::ConstructorNotFound", '... cannot create a setter injection with a bad constructor';
 
 throws_ok {
-    IOC::Service::SetterInjection->new('file4' => ("Logger", 'new', [ { noMethod => 'nuttin' } ]), $container)->instance;
+    IOC::Service::SetterInjection->new('file4' => ("Logger", 'new', [ { noMethod => 'nuttin' } ]))->setContainer($container)->instance;
 } "IOC::MethodNotFound", '... cannot create a setter injection with a bad setter methods';

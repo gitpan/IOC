@@ -4,21 +4,21 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IOC::Exceptions;
 
 sub new {
-    my ($_class, $name, $block, $container) = @_;
+    my ($_class, $name, $block) = @_;
     my $class = ref($_class) || $_class;
     my $service = {};
     bless($service, $class);
-    $service->_init($name, $block, $container);
+    $service->_init($name, $block);
     return $service;
 }
 
 sub _init {
-    my ($self, $name, $block, $container) = @_;
+    my ($self, $name, $block) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "Service object cannot be created without a name";
     (defined($block) && ref($block) eq 'CODE')
         || throw IOC::InsufficientArguments "Service object cannot be created without CODE block";
@@ -29,7 +29,6 @@ sub _init {
     $self->{block} = $block;
     # container is optional
     $self->{container} = undef;    
-    $container->register($self) if $container;
 }
 
 sub name {
@@ -42,6 +41,7 @@ sub setContainer {
     (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
         || throw IOC::InsufficientArguments "container argument is incorrect";
     $self->{container} = $container;
+    $self;
 }
 
 sub instance {
@@ -106,9 +106,9 @@ In this IOC framework, the IOC::Service object holds instances of components to 
 
 =over 4
 
-=item B<new ($name, $block, $container)>
+=item B<new ($name, $block)>
 
-Creates a service with a C<$name>, and uses the C<$block> argument to initialize the service on demand. An optional third argument is the C<$container> which tells the service which container is belongs in. This can also be set with the C<setContainer> method.
+Creates a service with a C<$name>, and uses the C<$block> argument to initialize the service on demand.
 
 =item B<name>
 

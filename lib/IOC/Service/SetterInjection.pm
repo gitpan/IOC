@@ -4,23 +4,23 @@ package IOC::Service::SetterInjection;
 use strict;
 use warnings;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use IOC::Exceptions;
 
 use base 'IOC::Service';
 
 sub new {
-    my ($_class, $name, $component_class, $component_constructor, $setter_parameters, $container) = @_;
+    my ($_class, $name, $component_class, $component_constructor, $setter_parameters) = @_;
     my $class = ref($_class) || $_class;
     my $service = {};
     bless($service, $class);
-    $service->_init($name, $component_class, $component_constructor, $setter_parameters, $container);
+    $service->_init($name, $component_class, $component_constructor, $setter_parameters);
     return $service;
 }
 
 sub _init {
-    my ($self, $name, $component_class, $component_constructor, $setter_parameters, $container) = @_;
+    my ($self, $name, $component_class, $component_constructor, $setter_parameters) = @_;
     (defined($component_class) && defined($component_constructor))
         || throw IOC::InsufficientArguments "You must provide a class and a constructor method";
     (defined($setter_parameters) && ref($setter_parameters) eq 'ARRAY')
@@ -56,8 +56,7 @@ sub _init {
                 $instance->$setter_method($c->get($setter_value));
             }                
             return $instance;            
-        },
-        $container
+        }
         );
 }
 
@@ -87,9 +86,9 @@ In this IOC framework, the IOC::Service::SetterInjection object holds instances 
 
 =over 4
 
-=item B<new ($name, $component_class, $component_constructor, $setter_parameters, $container)>
+=item B<new ($name, $component_class, $component_constructor, $setter_parameters)>
 
-Creates a service with a C<$name>, and uses the C<$component_class> and C<$component_constructor> string arguments to initialize the service on demand. An optional fourth argument is the C<$container> which tells the service which container is belongs in. This can also be set with the C<setContainer> method.
+Creates a service with a C<$name>, and uses the C<$component_class> and C<$component_constructor> string arguments to initialize the service on demand. 
 
 If the C<$component_class> and C<$component_constructor> arguments are not defined, an B<IOC::InsufficientArguments> exception will be thrown. 
 
