@@ -10,6 +10,8 @@ BEGIN {
     use_ok('IOC::Container');  
     use_ok('IOC::Service');  
     use_ok('IOC::Visitor::ServiceLocator'); 
+    use_ok('IOC::Visitor::SearchForService');   
+    use_ok('IOC::Visitor::SearchForContainer');    
 }
 
 can_ok("IOC::Container", 'new');
@@ -129,3 +131,54 @@ throws_ok {
 }
 
 
+throws_ok {
+    IOC::Visitor::SearchForService->new()
+} "IOC::InsufficientArguments", '... got the error we expected';
+
+{
+
+    my $visitor = IOC::Visitor::SearchForService->new("/dummy_path");
+    isa_ok($visitor, 'IOC::Visitor::SearchForService');
+
+    throws_ok {
+        $visitor->visit()
+    } "IOC::InsufficientArguments", '... got the error we expected';
+
+    throws_ok {
+        $visitor->visit("Fail")
+    } "IOC::InsufficientArguments", '... got the error we expected';
+    
+    throws_ok {
+        $visitor->visit([])
+    } "IOC::InsufficientArguments", '... got the error we expected';
+    
+    throws_ok {
+        $visitor->visit(bless({}, 'Fail'))
+    } "IOC::InsufficientArguments", '... got the error we expected';            
+}  
+
+throws_ok {
+    IOC::Visitor::SearchForContainer->new()
+} "IOC::InsufficientArguments", '... got the error we expected';
+
+{
+
+    my $visitor = IOC::Visitor::SearchForContainer->new("/dummy_path");
+    isa_ok($visitor, 'IOC::Visitor::SearchForContainer');
+
+    throws_ok {
+        $visitor->visit()
+    } "IOC::InsufficientArguments", '... got the error we expected';
+
+    throws_ok {
+        $visitor->visit("Fail")
+    } "IOC::InsufficientArguments", '... got the error we expected';
+    
+    throws_ok {
+        $visitor->visit([])
+    } "IOC::InsufficientArguments", '... got the error we expected';
+    
+    throws_ok {
+        $visitor->visit(bless({}, 'Fail'))
+    } "IOC::InsufficientArguments", '... got the error we expected';            
+}

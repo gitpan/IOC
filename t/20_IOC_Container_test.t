@@ -77,4 +77,16 @@ is_deeply(
         [ 'logger' ],
         '... these are the services we have');
 
+# check misc errors
+
+throws_ok {
+    $container->hasSubContainer()
+} "IOC::InsufficientArguments", '... got the error we expected';
+
+throws_ok {
+    $container->hasService()
+} "IOC::InsufficientArguments", '... got the error we expected';
+
+# just call destroy... 
+
 $container->DESTROY();

@@ -4,30 +4,12 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 use IOC::Exceptions;
 
 use IOC::Container;
 use IOC::Service;
-
-# 
-# my %CONTAINERS;
-# 
-# sub registerContainerInstance {
-#     my ($class, $container) = @_;
-#     (defined($container) && ref($container) && UNIVERSAL::isa($container, 'IOC::Container'))
-#         || throw IOC::InsufficientArguments "You must supply a valid IOC::Container object";
-#     my $container_name = $container->name();
-#     (!exists $CONTAINERS{$name})
-#         || throw IOC::ContainerAlreadyExists "Duplicate Container '$name'";
-#     $CONTAINER{$name} = $container;
-# }
-# 
-# sub getContainerNameList {
-#     my ($class) = @_;
-#     return keys %CONTAINERS;
-# }
 
 1;
 
@@ -66,6 +48,26 @@ With Inversion of Control, you configure a set of individual Service objects, wh
 
 For links to how other people have explained Inversion of Control, see the L<SEE ALSO> section.
 
+=head2 Why Do I Need This?
+
+Inversion of Control is not for everyone and really is most useful in larger applications. But if you are still wondering if this is for you, then here are a few questions you can ask yourself.
+
+=over 4
+
+=item Do you have more than a few Singletons in your code? 
+
+If so, you are a likely canidate for IOC. Singletons can be very useful tools, but when they are overused, they quickly start to take on all the same problems of global variables that they were meant to solve. With the IOC framework, you can reduce several singletons down to one, the IOC::Registry singleton, and allow for more fine grained control over their lifecycles.
+
+=item Is your initialization code overly complex?
+
+One of the great parts about IOC is that all initialzation of dependencies will get resolved through the IOC framework itself. This allows your application to dynamically reconfigure it load order without you having to recode anything but the actual dependency change. 
+
+=item Are you using some kind of Service Locator?
+
+My whole reasoning for creating this module was that I was using a Service Locator object from which I dispensed all my components. This created a lot of delicate initialization code which would frequently be caused issues, and since the Service Locator was initialized I<after> all the services were, it was nessecary to resolve dependencies between components manually. 
+
+=back
+
 =head2 Diagrams
 
 Here is a quick class relationship diagram, to help illustrate how the peices of this system fit together.
@@ -87,10 +89,6 @@ Here is a quick class relationship diagram, to help illustrate how the peices of
 
 =item Work on the documentation
 
-=item Create a top-level IOC::Registry
-
-This would be a singleton object, which could be used to serve a something like a top-level container. I need to think this one out more.
-
 =back
 
 =head1 BUGS
@@ -104,17 +102,20 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
  File                                  stmt branch   cond    sub    pod   time  total
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
- IOC.pm                               100.0    n/a    n/a  100.0    n/a   38.2  100.0
- IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a    5.9  100.0
- IOC/Interfaces.pm                    100.0    n/a    n/a  100.0    n/a    5.6  100.0
- IOC/Container.pm                     100.0   96.7   93.1  100.0  100.0   25.7   98.4
+ IOC.pm                               100.0    n/a    n/a  100.0    n/a    4.0  100.0
+ IOC/Exceptions.pm                    100.0    n/a    n/a  100.0    n/a    6.6  100.0
+ IOC/Interfaces.pm                    100.0    n/a    n/a  100.0    n/a    6.3  100.0
+ IOC/Registry.pm                      100.0  100.0   77.8  100.0  100.0   14.5   97.6
+ IOC/Container.pm                     100.0   97.4   93.1  100.0  100.0   33.8   98.6
  IOC/Container/MethodResolution.pm    100.0  100.0    n/a  100.0    n/a    1.4  100.0
- IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   11.9   97.5
- IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    4.1   97.3
- IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0    4.2   97.2
- IOC/Visitor/ServiceLocator.pm        100.0  100.0   77.8  100.0  100.0    3.2   97.0
+ IOC/Service.pm                       100.0  100.0   83.3  100.0  100.0   15.3   97.5
+ IOC/Service/ConstructorInjection.pm  100.0  100.0   77.8  100.0  100.0    4.4   97.3
+ IOC/Service/SetterInjection.pm       100.0  100.0   77.8  100.0  100.0    4.5   97.2
+ IOC/Visitor/SearchForContainer.pm    100.0   90.0   77.8  100.0  100.0    2.8   95.1
+ IOC/Visitor/SearchForService.pm      100.0  100.0   77.8  100.0  100.0    2.9   96.7
+ IOC/Visitor/ServiceLocator.pm        100.0  100.0   77.8  100.0  100.0    3.5   97.0
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                100.0   98.8   85.3  100.0  100.0  100.0   98.0
+ Total                                100.0   98.4   83.2  100.0  100.0  100.0   97.7
  ----------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
@@ -126,6 +127,10 @@ Some IoC Article links
 =item The code here was originally inspired by the code found in this article.
 
 L<http://onestepback.org/index.cgi/Tech/Ruby/DependencyInjectionInRuby.rdoc>
+
+=item Dependency Injection is the Inverse of Garbage Collection
+
+L<http://howardlewisship.com/blog/2004/08/dependency-injection-mirror-of-garbage.html>
 
 =item This is a decent article on IoC with Java.
 

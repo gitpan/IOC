@@ -1,5 +1,18 @@
 Revision history for Perl extension IOC.
 
+0.05 Tues Oct 19 2004
+    + added IOC::Registry
+        ~ created dependency with Class::StrongSingleton
+        ~ added tests for this
+    + added IOC::VisitorSearchForService
+        ~ added tests for this
+    + added IOC::VisitorSearchForContainer
+        ~ added tests for this
+
+    * IOC::Container
+        > added hasSubContainer method
+        > added hasService method
+
 0.04 Tues Oct 19 2004 
     < No CODE changes>
         - forgot to add Class::Interfaces to the dependency list

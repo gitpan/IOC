@@ -1,5 +1,11 @@
-IOC version 0.04
+IOC version 0.05
 ===========================
+
+This module provide a lightweight IOC or Inversion of Control framework. 
+Inversion of Control, sometimes called Dependency Injection, is a 
+component management style which aims to clean up component configuration 
+and provide a cleaner, more flexible means of configuring a large 
+application.
 
 See the individual module documentation for more information
 
@@ -16,7 +22,11 @@ DEPENDENCIES
 
 This module requires these other modules and libraries:
 
-	None
+	Class::Interfaces
+    Class::Throwable
+    Class::StrongSingleton
+    
+    Test::Exception (for testing)
 
 COPYRIGHT AND LICENCE
 

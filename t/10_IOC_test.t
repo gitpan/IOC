@@ -12,6 +12,8 @@ BEGIN {
     use_ok('IOC::Exceptions');    
     use_ok('IOC::Interfaces'); 
     
+    use_ok('IOC::Registry');
+    
     use_ok('IOC::Container');
         use_ok('IOC::Container::MethodResolution');
     
@@ -20,7 +22,9 @@ BEGIN {
         use_ok('IOC::Service::SetterInjection');     
     
     # IOC::Visitor     
-        use_ok('IOC::Visitor::ServiceLocator');         
+        use_ok('IOC::Visitor::ServiceLocator');
+        use_ok('IOC::Visitor::SearchForService');   
+        use_ok('IOC::Visitor::SearchForContainer');      
 }
 
 # test our simple example

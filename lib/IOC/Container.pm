@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -73,6 +73,12 @@ sub addSubContainers {
     $self;
 }
 
+sub hasSubContainer {
+    my ($self, $name) = @_;
+    (defined($name)) || throw IOC::InsufficientArguments "You must supply a name of a sub-container";
+    return (exists ${$self->{sub_containers}}{$name}) ? 1 : 0;
+}
+
 sub hasSubContainers {
     my ($self) = @_;
     return scalar(keys(%{$self->{sub_containers}})) ? 1 : 0;
@@ -130,6 +136,12 @@ sub find {
     (defined($path)) || throw IOC::InsufficientArguments "You must provide a path of find a service";
     require IOC::Visitor::ServiceLocator;
     return $self->accept(IOC::Visitor::ServiceLocator->new($path));    
+}
+
+sub hasService {
+    my ($self, $name) = @_;
+    (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
+    return (exists ${$self->{services}}{$name}) ? 1 : 0;
 }
 
 sub getServiceList {
@@ -260,6 +272,8 @@ If there is no service by that C<$name>, then a B<IOC::ServiceNotFound> exceptio
 
 Given a C<$path> to a service, this method will attempt to locate that service. It utilizes the L<IOC::Visitor::ServiceLocator> to do this. 
 
+=item B<hasService ($name)>
+
 =item B<getServiceList>
 
 Returns a list of all the named services available.
@@ -295,6 +309,8 @@ Adds a C<$container> to it's keyed list of sub-containers. This has the effect o
 =item B<addSubContainers (@container)>
 
 This just loops calling C<addSubContainer> on each of the items in C<@containers>.
+
+=item B<hasSubContainer ($name)>
 
 =item B<hasSubContainers>
 
