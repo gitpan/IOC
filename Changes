@@ -1,5 +1,13 @@
 Revision history for Perl extension IOC.
 
+0.19 Thurs Dec 23 2004
+    * IOC::Proxy
+        - fixed an issue with how overloaded
+          objects were handled. We no longer 
+          copy the '()' method. This will help
+          to deal with overloaded object in
+          a more consistent manner.
+
 0.18 Fri Dec 17 2004
     * IOC::Container
         - improved some diagnostic messages

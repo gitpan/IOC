@@ -82,7 +82,7 @@ BEGIN {
     package Base::Overload;
     
     use overload '""' => sub { return "hello world " . overload::StrVal($_[0]) },
-                 'eq' => sub { overload::StrVal($_[0]) eq overload::StrVal($_[1]) };
+                 fallback => 1;
     
     sub new { bless sub {}, $_[0] }
 }
@@ -101,13 +101,15 @@ BEGIN {
     isa_ok($proxied_object, 'Base::Overload::_::Proxy');
     isa_ok($proxied_object, 'Base::Overload');
     
-    like($proxied_object, qr/hello world Base\:\:Overload\:\:_\:\:Proxy=CODE\(0x[a-f0-9]+\)/, '... got the thing we expected');
+    like($proxied_object, 
+         qr/hello world Base\:\:Overload\:\:_\:\:Proxy=CODE\(0x[a-f0-9]+\)/, 
+         '... got the thing we expected');
     
     is_deeply(\@method_calls,
-            [[ $proxy_server, '(""', 'Base::Overload::(""', [ $object, undef, '' ]]],
-           '... got the method calls we exected');    
+              [[ $proxy_server, '(""', 'Base::Overload::(""', [ $object, undef, '' ]]],
+              '... got the method calls we exected');    
 
-    cmp_ok(scalar(@method_calls), '==', 2, '... want to be sure the "eq" registered as well');
+    cmp_ok(scalar(@method_calls), '>=', 1, '... we know at least one method has been registered');
 }
 
 # and some misc. stuff

@@ -4,7 +4,7 @@ package IOC::Proxy;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Scalar::Util qw(blessed);
 
@@ -88,7 +88,7 @@ sub _createPackageString {
                         my $real = overload::StrVal($_[0]);
                         $real =~ s/\:\:\_\:\:Proxy//;
                         return $real;
-                      }, fallback => 1|;
+                    }, fallback => 1|;
     }
     return qq|
         package $proxy_package; 
@@ -102,6 +102,7 @@ sub _installMethods {
     no strict 'refs';
     while (my ($method_name, $method) = each %{$methods}) {
         next if defined &{"${proxy_package}::$method_name"};
+        next if $method_name eq '()'; # this is the overloaded indicator, we shouldn't proxy this
         if ($method_name eq 'AUTOLOAD') {
             *{"${proxy_package}::$method_name"} = sub { 
                             my $a = our $AUTOLOAD;
