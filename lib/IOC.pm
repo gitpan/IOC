@@ -4,7 +4,7 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 use IOC::Exceptions;
 
@@ -240,30 +240,9 @@ Defines a number of interfaces (with Class::Interfaces) used in the system.
 
 =item Cyclical and Graph Dependencies
 
-Currently this framework cannot handle any cyclical or graph dependecies, basically anything which might look like either of these two diagrams:
+Cyclical dependencies now work correctly (for the most part, there are still ways to produce infinite recursion, but most of them could be considered I<programmer error>) but should still be considered an experimental feature. This will need to be documented in more detail to explain the gotchas and edge cases. 
 
-Direct Cyclical dependencies
-
-    +---+
- +--| A |<-+
- |  +---+  |
- |  +---+  |
- +->| B |--+
-    +---+
-
-Graph (indirect) Cyclical dependencies
-    
-      +---+
-   +--| C |<-+
-   |  +---+  |
- +-V-+     +---+
- | D |     | F |
- +---+     +-^-+
-   |  +---+  |
-   +->| E |--+
-      +---+    
-
-I am currently working on a solution to this problem, if anyone has any suggestions, they would be greatly appreciated.      
+Currently proxys and cyclical dependencies are not working together. In order to resolve the cyclical dependency issue I need to create a IOC::Service::Deferred instance to defer the service creation with. A proxy should not wrap the deferred instance, but should only wrap the final created instance. Currently this does not happen, so I need to work on it.
 
 =back
 
@@ -322,7 +301,7 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Proxy/Interfaces.pm                        100.0  100.0    n/a  100.0    n/a    1.0  100.0
  IOC/Container.pm                               100.0   98.1   90.0  100.0  100.0   29.9   98.9
  IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.4  100.0
- IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   20.7   97.6
+ IOC/Service.pm                                  89.2   78.6   60.0   88.0  100.0   12.4   84.6
  IOC/Service/ConstructorInjection.pm            100.0  100.0   75.0  100.0  100.0   14.2   96.4
  IOC/Service/SetterInjection.pm                 100.0  100.0   77.8  100.0  100.0    4.5   97.3
  IOC/Service/Prototype.pm                       100.0  100.0    n/a  100.0  100.0    1.5  100.0
@@ -332,7 +311,7 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Visitor/SearchForService.pm                100.0  100.0   66.7  100.0  100.0    0.7   96.8
  IOC/Visitor/ServiceLocator.pm                  100.0  100.0   66.7  100.0  100.0    2.1   97.0
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                          100.0   98.0   76.8  100.0  100.0  100.0   98.1
+ Total                                           98.8   95.2   73.9   98.4  100.0  100.0   96.6
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO

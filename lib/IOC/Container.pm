@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 use Scalar::Util qw(blessed);
 
@@ -170,10 +170,11 @@ sub get {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
     (exists ${$self->{services}}{$name}) 
-        || throw IOC::ServiceNotFound "Unknown Service '${name}'";        
-    (!$self->_isServiceLocked($name)) 
-       || throw IOC::IllegalOperation "The '$name' service is currently locked, a cyclical dependency has been found";
-    $self->_lockService($name);
+        || throw IOC::ServiceNotFound "Unknown Service '${name}'";  
+    if ($self->_isServiceLocked($name)) {
+        return IOC::Service::Deferred->create($name, $self->{services}->{$name});
+    }
+    $self->_lockService($name);   
     my $instance = $self->{services}->{$name}->instance();
     $self->_unlockService($name);      
     return $self->{proxies}->{$name}->wrap($instance) if exists ${$self->{proxies}}{$name};
@@ -368,6 +369,8 @@ Adds a C<$proxy> object to wrap the service at C<$name>.
 Given a C<$name> this will return the service instance that name corresponds to, if C<$name> is not defined, an exception is thrown.
 
 If there is no service by that C<$name>, then a B<IOC::ServiceNotFound> exception is thrown.
+
+B<NOTE:> If the requested service is currently locked (meaning it is being created), then a deferred service stub is returned. This will allow for cyclical dependencies to work. 
 
 =item B<find ($path)>
 

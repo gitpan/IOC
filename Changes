@@ -1,5 +1,19 @@
 Revision history for Perl extension IOC.
 
+0.15 Sat Nov 20 2004
+    * IOC::Container
+        - adjusted how cyclical dependencies are
+          handled, so that they are now possible,
+          although still somewhat in their early 
+          stages.
+            - added tests for this
+        
+    * IOC::Service
+        - adjusted how cyclical dependencies are
+          handled, and created a sub-package called
+          IOC::Service::Deferred to facilitate this
+            - added tests for this
+
 0.14 Thurs Nov 18 2004
     > now using Scalar::Util::blessed() instead of 
       the convoluted UNIVERSAL::isa() stuff. This 

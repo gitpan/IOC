@@ -4,7 +4,7 @@ package IOC::Service;
 use strict;
 use warnings;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Scalar::Util qw(blessed);
 
@@ -57,7 +57,8 @@ sub instance {
     unless (defined $self->{_instance}) {
         (defined($self->{container}))
             || throw IOC::IllegalOperation "Cannot create a service instance without setting container";    
-        $self->{_instance} = $self->{block}->($self->{container});
+        my $instance = $self->{block}->($self->{container});
+        $self->{_instance} = $instance unless defined $self->{_instance};
         (defined($self->{_instance})) 
             || throw IOC::InitializationError "Service creation block returned undefined value";
     }
@@ -77,6 +78,61 @@ sub DESTROY {
     # call to DESTROY this object came from
     # its container anyway
     $self->{container} = undef if defined $self->{container};
+}
+
+package IOC::Service::Deferred;
+
+use strict;
+use warnings;
+
+our $VERSION = '0.01';
+
+use overload '%{}' => sub { 
+                    return $_[0] if (caller)[0] eq 'IOC::Service::Deferred';
+                    $_[0] = $_[0]->{service}->instance(); 
+                    $_[0] 
+              },
+             '@{}' => sub { $_[0] = $_[0]->{service}->instance(); $_[0] },
+             '${}' => sub { $_[0] = $_[0]->{service}->instance(); $_[0] },             
+             '&{}' => sub { $_[0] = $_[0]->{service}->instance(); $_[0] },
+              nomethod => sub {
+                    $_[0] = $_[0]->{service}->instance();
+                    return overload::StrVal($_[0]) if ($_[3] eq '""' && !overload::Method($_[0], $_[3]));
+                    if (my $func = overload::Method($_[0], $_[3])) {
+                        return $_[0]->$func($_[1], $_[2]);
+                    }
+                    throw IOC::MethodNotFound "Could not find a method for overloaded '$_[3]' operator";
+              };             
+
+use Scalar::Util qw(blessed);
+
+sub create {
+    my ($class, $name, $service) = @_;
+    (blessed($service) && $service->isa('IOC::Service')) 
+        || throw IOC::InsufficientArguments "You can only defer an IOC::Service object";
+    #print ">>>> $name -> deferred -> $service\n";
+    return bless { service => $service }, $class;
+}
+
+sub can { 
+    $_[0] = $_[0]->{service}->instance();
+    (shift)->can(shift);
+}
+
+sub isa { 
+    $_[0] = $_[0]->{service}->instance();
+    (shift)->isa(shift);
+}
+
+sub DESTROY { (shift)->{service} = undef }
+
+sub AUTOLOAD {
+    my ($subname) = our $AUTOLOAD =~ /([^:]+)$/;
+    $_[0] = $_[0]->{service}->instance();
+    my $func = $_[0]->can( $subname );
+    (ref($func) eq 'CODE') 
+        || throw IOC::MethodNotFound "You cannot call '$subname'";
+    goto &$func;
 }
 
 1;
@@ -152,10 +208,6 @@ This method returns the component held by the service object, the is basically t
 =over 4
 
 =item Work on the documentation
-
-=item Add Interface Injection 
-
-This is the most complex of all the injection methods, and will require the most code. I have to read up on this technique a little more first. However, I am not really convinced it is needed.
 
 =back
 
