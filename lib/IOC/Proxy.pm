@@ -4,7 +4,7 @@ package IOC::Proxy;
 use strict;
 use warnings;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use IOC::Exceptions;
 
@@ -19,72 +19,23 @@ sub new {
 }
 
 sub wrap {
-    my ($class, $obj) = @_;
+    my ($self, $obj) = @_;
     (defined($obj) && ref($obj) && UNIVERSAL::isa($obj, 'UNIVERSAL')) 
         || throw IOC::InsufficientArguments "You can only wrap other objects";
     my $obj_class = ref($obj);
 
     my $methods = {};
-    $class->_collectAllMethods($obj_class, $methods);
+    $self->_collectAllMethods($obj_class, $methods);
     (keys %{$methods}) || throw IOC::OperationFailed "No methods could be found in '$obj_class'";
 
-    my $overload = "";
-    unless ($obj->can('(""')) {
-        $overload = q|use overload '""' => sub {
-                        my $real = overload::StrVal($_[0]);
-                        $real =~ s/\:\:\_\:\:Proxy//;
-                        return $real;
-                      }, fallback => 1|;
-    }
-
     my $proxy_package = "${obj_class}::_::Proxy";
-    eval qq|
-        package $proxy_package; 
-        our \@ISA = ('$obj_class');
-        $overload;
-    |;
+
+    eval $self->_createPackageString($obj_class, $proxy_package);
     throw IOC::OperationFailed "Could not create proxy package '$proxy_package' for object '$obj'" => $@ if $@;
 
-    no strict 'refs';
-    while (my ($method_name, $method) = each %{$methods}) {
-        next if defined &{"${proxy_package}::$method_name"};
-        if ($method_name eq 'AUTOLOAD') {
-            *{"${proxy_package}::$method_name"} = sub { 
-                            my $a = our $AUTOLOAD;
-                            # we cannot call this here as it will create a new
-                            # reference to the object (in the \@_) and that will
-                            # defeat the use of DESTORY, so we just ignore this
-                            # if we get called by destroy
-                            if ($a =~ /DESTROY/) {
-                                $class->onMethodCall($method_name, $method->{full_name}, []);                            
-                            }
-                            else {
-                                $class->onMethodCall($method_name, $method->{full_name}, \@_);
-                            }
-                            $a =~ s/\:\:\_\:\:Proxy//;
-                            ${"${obj_class}::AUTOLOAD"} = $a;
-                            goto &{$method->{code}};
-                        };        
-        }
-        elsif ($method_name eq 'DESTROY') {
-            *{"${proxy_package}::$method_name"} = sub { 
-                            # we cannot call onMethodCall this here as it will create a new
-                            # reference to the object (in the \@_) and that will
-                            # defeat the use of DESTORY, so we just ignore this
-                            # if we get called by destroy
-                            $class->onMethodCall($method_name, $method->{full_name}, []);                            
-                            goto &{$method->{code}};
-                        };        
-        }        
-        else {
-            *{"${proxy_package}::$method_name"} = sub { 
-                            $class->onMethodCall($method_name, $method->{full_name}, \@_);
-                            goto &{$method->{code}};
-                        };
-        }
-    }
-
-    $class->onWrap($obj, $proxy_package);
+    $self->_installMethods($obj_class, $proxy_package, $methods);
+    
+    $self->onWrap($obj, $proxy_package);
     bless $obj, $proxy_package;
 }
 
@@ -102,23 +53,84 @@ sub onWrap {
     }    
 }
 
+# PRIVATE METHODS
+
 sub _collectAllMethods {
-    my ($class, $pkg, $methods, $cache) = @_;
+    my ($self, $obj_class, $methods, $cache) = @_;
     $cache ||= {};
-    return if exists ${$cache}{$pkg};
-    $cache->{$pkg}++;
+    return if exists ${$cache}{$obj_class};
+    $cache->{$obj_class}++;
     
     no strict 'refs';
     do { 
         $methods->{$_} = { 
-            full_name => "${pkg}::$_", 
-            code => \&{"${pkg}::$_"}  
+            full_name => "${obj_class}::$_", 
+            code => \&{"${obj_class}::$_"}  
         } unless exists ${$methods}{$_}
     } foreach 
-        grep { defined &{"${pkg}::$_"} } 
-            keys %{"${pkg}::"};
+        grep { defined &{"${obj_class}::$_"} } 
+            keys %{"${obj_class}::"};
     
-    $class->_collectAllMethods($_, $methods, $cache) foreach @{"${pkg}::ISA"};
+    $self->_collectAllMethods($_, $methods, $cache) foreach @{"${obj_class}::ISA"};
+}
+
+sub _createPackageString {
+    my ($self, $obj_class, $proxy_package) = @_;
+    my $overload = "";
+    unless ($obj_class->can('(""')) {
+        $overload = q|use overload '""' => sub {
+                        my $real = overload::StrVal($_[0]);
+                        $real =~ s/\:\:\_\:\:Proxy//;
+                        return $real;
+                      }, fallback => 1|;
+    }
+    return qq|
+        package $proxy_package; 
+        our \@ISA = ('$obj_class');
+        $overload;
+    |;
+}
+
+sub _installMethods {
+    my ($self, $obj_class, $proxy_package, $methods) = @_;    
+    no strict 'refs';
+    while (my ($method_name, $method) = each %{$methods}) {
+        next if defined &{"${proxy_package}::$method_name"};
+        if ($method_name eq 'AUTOLOAD') {
+            *{"${proxy_package}::$method_name"} = sub { 
+                            my $a = our $AUTOLOAD;
+                            # we cannot call this here as it will create a new
+                            # reference to the object (in the \@_) and that will
+                            # defeat the use of DESTORY, so we just ignore this
+                            # if we get called by destroy
+                            if ($a =~ /DESTROY/) {
+                                $self->onMethodCall($method_name, $method->{full_name}, []);                            
+                            }
+                            else {
+                                $self->onMethodCall($method_name, $method->{full_name}, \@_);
+                            }
+                            $a =~ s/\:\:\_\:\:Proxy//;
+                            ${"${obj_class}::AUTOLOAD"} = $a;
+                            goto &{$method->{code}};
+                        };        
+        }
+        elsif ($method_name eq 'DESTROY') {
+            *{"${proxy_package}::$method_name"} = sub { 
+                            # we cannot call onMethodCall this here as it will create a new
+                            # reference to the object (in the \@_) and that will
+                            # defeat the use of DESTORY, so we just ignore this
+                            # if we get called by destroy
+                            $self->onMethodCall($method_name, $method->{full_name}, []);                            
+                            goto &{$method->{code}};
+                        };        
+        }        
+        else {
+            *{"${proxy_package}::$method_name"} = sub { 
+                            $self->onMethodCall($method_name, $method->{full_name}, \@_);
+                            goto &{$method->{code}};
+                        };
+        }
+    }
 }
 
 1;

@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use IOC::Interfaces;
 use IOC::Exceptions;
@@ -25,6 +25,7 @@ sub new {
 sub _init {
     my ($self, $name) = @_;
     $self->{services} = {};
+    $self->{service_locks} = {};
     $self->{proxies} = {};
     $self->{sub_containers} = {};
     $self->{parent_container} = undef;
@@ -167,8 +168,12 @@ sub get {
     my ($self, $name) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
     (exists ${$self->{services}}{$name}) 
-        || throw IOC::ServiceNotFound "Unknown Service '${name}'";
+        || throw IOC::ServiceNotFound "Unknown Service '${name}'";        
+    (!$self->_isServiceLocked($name)) 
+       || throw IOC::IllegalOperation "The '$name' service is currently locked, a cyclical dependency has been found";
+    $self->_lockService($name);
     my $instance = $self->{services}->{$name}->instance();
+    $self->_unlockService($name);      
     return $self->{proxies}->{$name}->wrap($instance) if exists ${$self->{proxies}}{$name};
     return $instance;
 }
@@ -208,6 +213,27 @@ sub DESTROY {
     foreach my $service (values %{$self->{services}}) {
         defined $service && $service->DESTROY;
     } 
+}
+
+# private methods
+
+sub _lockService {
+    my ($self, $name) = @_;   
+    $self->{lock_level}++;
+    $self->{service_locks}->{$name} = $self->{lock_level}; 
+#     use Data::Dumper;
+#     print "locking '$name' -> our locks are: " . Dumper($self->{service_locks});         
+}
+
+sub _unlockService {
+    my ($self, $name) = @_;
+    $self->{lock_level}--;
+    delete $self->{service_locks}->{$name};
+}
+
+sub _isServiceLocked {
+    my ($self, $name) = @_;       
+    return (exists ${$self->{service_locks}}{$name});
 }
 
 1;

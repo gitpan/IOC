@@ -26,7 +26,6 @@ BEGIN {
             use_ok('IOC::Service::Prototype::SetterInjection');     
     
     use_ok('IOC::Proxy');
-    # IOC::Proxy
     
     # IOC::Visitor     
         use_ok('IOC::Visitor::ServiceLocator');

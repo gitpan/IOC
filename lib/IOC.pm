@@ -4,13 +4,14 @@ package IOC;
 use strict;
 use warnings;
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 use IOC::Exceptions;
 
 use IOC::Container;
 use IOC::Service;
 use IOC::Registry;
+use IOC::Proxy;
 
 1;
 
@@ -229,6 +230,39 @@ Defines a number of interfaces (with Class::Interfaces) used in the system.
 
 =back
 
+=head1 CAVEATS
+
+=over 4
+
+=item Cyclical and Graph Dependencies
+
+Currently this framework cannot handle any cyclical or graph dependecies, basically anything which might look like either of these two diagrams:
+
+Direct Cyclical dependencies
+
+    +---+
+ +--| A |<-+
+ |  +---+  |
+ |  +---+  |
+ +->| B |--+
+    +---+
+
+Graph (indirect) Cyclical dependencies
+    
+      +---+
+   +--| C |<-+
+   |  +---+  |
+ +-V-+     +---+
+ | D |     | F |
+ +---+     +-^-+
+   |  +---+  |
+   +->| E |--+
+      +---+    
+
+I am currently working on a solution to this problem, if anyone has any suggestions, they would be greatly appreciated.      
+
+=back
+
 =head1 TO DO   
 
 =over 4
@@ -280,8 +314,8 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Exceptions.pm                              100.0    n/a    n/a  100.0    n/a    6.0  100.0
  IOC/Interfaces.pm                              100.0    n/a    n/a  100.0    n/a    5.5  100.0
  IOC/Registry.pm                                100.0   97.4   77.8  100.0  100.0    7.9   98.3
- IOC/Proxy.pm                                   100.0   95.5   81.8   92.3  100.0    8.4   97.0
- IOC/Container.pm                               100.0   98.1   94.3  100.0  100.0   30.2   98.9
+ IOC/Proxy.pm                                   100.0   91.7   81.8  100.0  100.0   61.0   97.2
+ IOC/Container.pm                               100.0   98.1   94.3  100.0  100.0   21.0   99.0
  IOC/Container/MethodResolution.pm              100.0  100.0    n/a  100.0    n/a    1.4  100.0
  IOC/Service.pm                                 100.0  100.0   83.3  100.0  100.0   20.7   97.6
  IOC/Service/ConstructorInjection.pm            100.0  100.0   77.8  100.0  100.0    3.4   97.4
@@ -293,7 +327,7 @@ I use B<Devel::Cover> to test the code coverage of my tests, below is the B<Deve
  IOC/Visitor/SearchForService.pm                100.0  100.0   77.8  100.0  100.0    2.0   96.7
  IOC/Visitor/ServiceLocator.pm                  100.0  100.0   77.8  100.0  100.0    3.2   96.9
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
- Total                                          100.0   98.4   83.9   99.3  100.0  100.0   98.0
+ Total                                          100.0   97.9   83.9  100.0  100.0  100.0   98.1
  --------------------------------------------- ------ ------ ------ ------ ------ ------ ------
 
 =head1 SEE ALSO
@@ -321,6 +355,10 @@ L<http://martinfowler.com/articles/injection.html>
 =item This is also sometimes called the Hollywood Principle
 
 L<http://c2.com/cgi/wiki?HollywoodPrinciple>
+
+=item An interesting comparison of differnet IoC frameworks
+
+L<http://www.pyrasun.com/mike/mt/archives/2004/11/06/15.46.14/index.html>
 
 =back
 

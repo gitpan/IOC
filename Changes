@@ -1,5 +1,22 @@
 Revision history for Perl extension IOC.
 
+0.11 Thurs Nov 11 2004   
+    * IOC
+        - added the IOC::Proxy module to the module 
+          which get pre-loaded with this module
+        
+    * IOC::Proxy
+        - broke the main methods down into small methods
+          (in Strategy pattern fashion) to allow for 
+          variance of functionality in subclasses
+           
+    * IOC::Container
+        - now detects a cyclical relationship and will
+          throw an IOC::IllegalOperation exception if it
+          is found. I am currently working on how to 
+          allow for these types of relationships to exists
+          so this is really just a temporary solution.
+
 0.10 Tues Nov 9 2004
     * IOC::Proxy
         ~ fixed a warning about subroutine redefinition
