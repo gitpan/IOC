@@ -1,0 +1,13 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+lib/IOC.pm
+lib/IOC/Exceptions.pm
+lib/IOC/Container.pm
+lib/IOC/Service.pm
+t/10_IOC_test.t
+t/20_IOC_Container_test.t
+t/30_IOC_Service_test.t
+t/pod.t
+t/pod_coverage.t
