@@ -1,5 +1,60 @@
 Revision history for Perl extension IOC.
 
+0.04 Tues Oct 19 2004 
+    < No CODE changes>
+        - forgot to add Class::Interfaces to the dependency list
+        - forgot to include this changelog
+
+0.03 Mon Oct 18 2004
+    + added IOC::Interfaces
+        ~ created dependency with Class::Interfaces
+    + added IOC::Visitor::ServiceLocator
+        ~ added tests for this
+    
+    * IOC::Exceptions
+        > changed few names again, but I got it right now
+        
+    * IOC::Container
+        > added visitor support
+            - made IOC::Container inherit from the 
+              IOC::Visitable interface (see IOC::Interfaces) 
+                ~ added tests for this
+                ~ added documentation for this
+        > added support for sub-containers
+            - added example of this to SYNOPSIS
+            - added a number of methods to deal with
+              sub-containers and parent containers
+                ~ added tests for all these
+                ~ added documentation for all these
+        > added 'find' method which utilizes a Visitor
+          to locate a given service through a path-like syntax
+          (see the IOC::Visitor::ServiceLocator for more)
+        > changed names of exceptions 
+            ~ IOC::DuplicateServiceException to IOC::ServiceAlreadyExists
+        
+
+0.02 Fri Oct 15 2004
+    + added IOC::Container::MethodResultion
+        ~ added tests for this
+    + added IOC::Service::ConstructorInjection
+        ~ added tests for this
+    + added IOC::Service::SetterInjection
+        ~ added tests for this
+        
+    * IOC::Exceptions
+        > added a few more exceptions to IOC::Exceptions
+          and changed the names of a few as well
+      
+    * IOC::Container
+        > changed names of exceptions 
+            ~ IOC::MissingService to IOC::ServiceNotFound
+            
+    * IOC::Service
+        > when a container is passed to the IOC::Service
+          constructor, it will now cause the service to
+          be officially registered with the container
+
+
 0.01 Thu Oct 14 20:03:20 2004
     - module created
 
