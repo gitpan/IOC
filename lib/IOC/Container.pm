@@ -4,7 +4,7 @@ package IOC::Container;
 use strict;
 use warnings;
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 use Scalar::Util qw(blessed);
 
@@ -167,7 +167,7 @@ sub addProxy {
 }
 
 sub get {
-    my ($self, $name) = @_;
+    my ($self, $name, %params) = @_;
     (defined($name)) || throw IOC::InsufficientArguments "You must provide a name of the service";
     (exists ${$self->{services}}{$name}) 
         || throw IOC::ServiceNotFound "Unknown Service '${name}'";
@@ -177,10 +177,16 @@ sub get {
     return $self->{services}->{$name}->instance() 
         if $self->{services}->{$name}->isa('IOC::Service::Literal');
     if ($self->_isServiceLocked($name)) {
+        # NOTE:
+        # if the service is parameterized
+        # then we cannot defer it - SL
+        ($self->{services}->{$name}->isa('IOC::Service::Parameterized')) 
+            && throw IOC::IllegalOperation "The service '$name' is locked, cannot defer a parameterized instance";
+        # otherwise ...    
         return $self->{services}->{$name}->deferred();
     }
     $self->_lockService($name);   
-    my $instance = $self->{services}->{$name}->instance();
+    my $instance = $self->{services}->{$name}->instance(%params);
     $self->_unlockService($name);      
     if (blessed($instance) && ref($instance) !~ /\:\:\_\:\:Proxy$/) {
         return $self->{proxies}->{$name}->wrap($instance) if exists ${$self->{proxies}}{$name};
@@ -189,9 +195,10 @@ sub get {
 }
 
 sub find {
-    my ($self, $path) = @_;
-    (defined($path)) || throw IOC::InsufficientArguments "You must provide a path of find a service";
-    return $self->accept(IOC::Visitor::ServiceLocator->new($path));    
+    my ($self, $path, $extra_args) = @_;
+    (defined($path)) 
+        || throw IOC::InsufficientArguments "You must provide a path of find a service";
+    return $self->accept(IOC::Visitor::ServiceLocator->new($path, $extra_args));    
 }
 
 sub hasService {
@@ -473,7 +480,7 @@ stevan little, E<lt>stevan@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004 by Infinity Interactive, Inc.
+Copyright 2004-2007 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 

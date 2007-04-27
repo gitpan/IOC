@@ -1,5 +1,21 @@
 Revision history for Perl extension IOC.
 
+0.29 Thurs. April 26, 2007
+    * IOC::Service::Parameterized
+        - added docs and tests for this
+    
+    * IOC::Registry
+        - &locateService accepts additional args now 
+          to support the parameterized containers
+          
+    * IOC::Container
+        - &find and &get accepts additional args now 
+          to support the parameterized containers        
+          
+    * IOC::Visitor::ServiceLocator
+        - supports additional args now for
+          the parameterized containers    
+
 0.28 Wed May 4 2005
     * IOC::Proxy
     * IOC::Proxy::Interfaces    

@@ -17,6 +17,7 @@ use IOC::Service::SetterInjection;
 use IOC::Service::Prototype;
 use IOC::Service::Prototype::ConstructorInjection;
 use IOC::Service::Prototype::SetterInjection;
+use IOC::Service::Parameterized;
 
 use base qw(XML::SAX::Base);
 
@@ -232,6 +233,18 @@ sub __makeService {
     );    
 }
 
+sub __makeServiceParameterized {
+    my ($self, $service_desc) = @_;
+    # we have a plain Service
+    ($service_desc->{data})
+        || throw IOC::ConfigurationError "No sub in Service";        
+    $self->{current}->register(
+        IOC::Service::Parameterized->new(
+            $service_desc->{name} => $self->_compilePerl('sub { ' . $service_desc->{data} . ' }')
+        )
+    );    
+}
+
 sub __makeServiceLiteral {
     my ($self, $service_desc) = @_;    
     (exists $service_desc->{data}) 
@@ -352,7 +365,7 @@ stevan little, E<lt>stevan@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2004 by Infinity Interactive, Inc.
+Copyright 2004-2007 by Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 
